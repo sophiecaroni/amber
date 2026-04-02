@@ -85,6 +85,10 @@ def plot_interv_effects(
             ax.set_title(f"{interv_label} - {econd_label}")
             ax.set_ylabel(f'{att_rt_agg.title()} Score')
 
+            # Customize legend
+            handles, labels = ax.get_legend_handles_labels()
+            ax.legend(handles, [vutils.get_att_type_label(l) for l in labels], title='Attention type')
+
     return fig
 
 
