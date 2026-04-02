@@ -82,6 +82,13 @@ def get_hue_palette(hue: str) -> dict:
 def get_interv_label(interv: str) -> str:
     return {
         'VR': 'VR-based training',
-        'OA': 'Occlusion Therapy'
+        'OA': 'Occlusion therapy'
     }[interv]
+
+
+def get_econd_label(econd: str) -> str:
+    return {
+        'DO': 'Dominant eye',
+        'ND': 'Non-dominant eye',
+    }[econd]
 
