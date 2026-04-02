@@ -75,8 +75,10 @@ def plot_iter_interv_effects(
         grouping_cols: list[str],
         att_rt_agg: str = 'mean',
         show: bool = True,
-        save: bool = False
+        test: bool = False,
+        save: bool = False,
 ) -> None:
+    figs = []
     for grouping_vals, grouped_df in df.groupby(grouping_cols):
         fig = plot_interv_effects(grouped_df, att_rt_agg)
         grouping_vals = list(grouping_vals)
@@ -89,3 +91,6 @@ def plot_iter_interv_effects(
             fig.show()
         else:
             plt.close(fig=fig)
+        figs.append(fig)
+        if figs and test:
+            break
