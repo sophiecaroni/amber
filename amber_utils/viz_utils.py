@@ -92,3 +92,11 @@ def get_econd_label(econd: str) -> str:
         'ND': 'Non-dominant eye',
     }[econd]
 
+
+def get_att_type_label(att_type: str) -> str:
+    return {
+        'audio_vis': 'Audiovisual',
+        'vis_sel': 'Visual selective',
+        'spat': 'Spatial',
+    }[att_type]
+
