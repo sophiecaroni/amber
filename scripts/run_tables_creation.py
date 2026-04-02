@@ -1,5 +1,7 @@
 import amber_utils.io_utils as io
-from src.amber.extract_features import extract_performance_features, extract_attention_features, extract_all_sessions
+from amber.features import extract_all_sessions
+from amber.features.attention_extraction import extract_attention_features
+from amber.features.performance_extraction import extract_performance_features
 
 
 def extract_all_session_perf_table(test: bool, save: bool = False):

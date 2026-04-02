@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import amber_utils.viz_utils as vutils
-from viz.data_viz import plot_feature_xcats
+from amber.viz.data_viz import plot_feature_xcats
 from matplotlib.figure import Figure
 
 

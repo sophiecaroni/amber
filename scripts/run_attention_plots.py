@@ -1,11 +1,11 @@
 import pandas as pd
-from viz.attention_viz import plot_iter_interv_effects
+from amber.viz.attention_viz import plot_iter_interv_effects
 
 
 def run_all_interv_effects_plots(show: bool, test: bool, save: bool = False):
     """
     Run functions for plotting intervention effects over time for all groups and aggregation metrics.
-    :return: 
+    :return: None
     """
     df = pd.read_csv('/Users/sophiecaroni/amber/outputs/results/attention_features.csv', index_col=0)
     for agg_metric, sub_df in df.groupby('att_rt_agg'):
