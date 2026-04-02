@@ -44,8 +44,15 @@ def plot_interv_effects(
             else:
                 raise ValueError(f'Unknown tpoint value: {tpoint=}')
 
+        # Define assessment column containing assigned 'Baseline' / 'Short-term' / 'Follow-up'
         interv_df['Assessment'] = interv_df.apply(assign_assessment, axis=1)
 
+        # Sort so that plots always appear in the order  'Baseline' / 'Short-term' / 'Follow-up'
+        order = ['Baseline', 'Short-term', 'Follow-up']
+        interv_df['Assessment'] = pd.Categorical(interv_df['Assessment'], categories=order, ordered=True)
+        interv_df.sort_values('Assessment', inplace=True)
+
+        # Call plot
         fig = plot_feature_xcats(
             interv_df,
             feature_col='att_val',
