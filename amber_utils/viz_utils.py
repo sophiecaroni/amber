@@ -83,14 +83,14 @@ def get_interv_label(interv: str) -> str:
     return {
         'VR': 'VR-based training',
         'OA': 'Occlusion therapy'
-    }[interv]
+    }.get(interv, interv)
 
 
 def get_econd_label(econd: str) -> str:
     return {
         'DO': 'Dominant eye',
         'ND': 'Non-dominant eye',
-    }[econd]
+    }.get(econd, econd)
 
 
 def get_att_type_label(att_type: str) -> str:
@@ -98,5 +98,5 @@ def get_att_type_label(att_type: str) -> str:
         'audio_vis': 'Audiovisual',
         'vis_sel': 'Visual selective',
         'spat': 'Spatial',
-    }[att_type]
+    }.get(att_type, att_type)
 
