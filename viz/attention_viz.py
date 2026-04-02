@@ -50,7 +50,7 @@ def plot_interv_effects(
         # Sort so that plots always appear in the order  'Baseline' / 'Short-term' / 'Follow-up'
         order = ['Baseline', 'Short-term', 'Follow-up']
         interv_df['Assessment'] = pd.Categorical(interv_df['Assessment'], categories=order, ordered=True)
-        interv_df.sort_values('Assessment', inplace=True)
+        interv_df.sort_values(['Assessment', 'att_type'], inplace=True)
 
         # Call plot
         fig = plot_feature_xcats(
