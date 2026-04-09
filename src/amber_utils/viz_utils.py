@@ -90,6 +90,14 @@ def get_hue_palette(hue: str) -> dict:
         raise ValueError(f'Custom palette missing for {hue = }')
 
 
+def get_interv_eff_label(interv_eff: str) -> str:
+    return {
+        'BL': 'Baseline',
+        'ST': 'Short-term',
+        'FU': 'Follow-up',
+    }.get(interv_eff, interv_eff)
+
+
 def get_interv_label(interv: str) -> str:
     return {
         'VR': 'VR-based training',

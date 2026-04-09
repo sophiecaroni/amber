@@ -25,11 +25,9 @@ def plot_interv_effects(
             raise ValueError(f'Value of att_rt_agg absent in df: {att_rt_agg=}')
         df = df[df['att_rt_agg'] == att_rt_agg]
 
-        # Get unique intervention types
-        intervs = {i for interv in df['interv'].unique() for i in interv.split('-')}  # interventions are encoded as VR, OA, but also VR-OA and OA-VR
+        # Get unique intervention types and eye-conditions
+        intervs = df['interv'].unique()
         n_interv = len(intervs)
-
-        # Get eye-conditions
         econds = df['eye_cond'].unique()
         n_econds = len(econds)
 
@@ -40,40 +38,19 @@ def plot_interv_effects(
         # Plot one eye-condition per row and one intervention per column
         for (econd, econd_df), row_axs in zip(df.groupby('eye_cond'), axs):
             for interv, ax in zip(intervs, row_axs):
-                interv_df = econd_df[econd_df['interv'].str.contains(interv)]
+                interv_df = econd_df[econd_df['interv'] == interv].copy()
 
-                def assign_assessment(row):
-                    tpoint = row['tpoint']
-
-                    # T3 is follow-up of the intervention before '-' and baseline of the intervention after '-' (e.g. if intervenvtion is 'VR-OA', VR is at the follow-up and OA at the baseline
-                    if tpoint == 'T3':
-                        first = row['interv'].split('-')[0]
-                        if first == interv:
-                            return 'Follow-up'
-                        else:
-                            return 'Baseline'
-                    elif tpoint == 'T1':  # always baseline
-                        return 'Baseline'
-                    elif tpoint == 'T2' or tpoint == 'T4':  # always short-term
-                        return 'Short-term'
-                    elif tpoint == 'T5':
-                        return 'Follow-up'  # always follow-up
-                    else:
-                        raise ValueError(f'Unknown tpoint value: {tpoint=}')
-
-                # Define assessment column containing assigned 'Baseline' / 'Short-term' / 'Follow-up'
-                interv_df['Assessment'] = interv_df.apply(assign_assessment, axis=1)
-
-                # Sort so that plots always appear in the order  'Baseline' / 'Short-term' / 'Follow-up'
-                order = ['Baseline', 'Short-term', 'Follow-up']
-                interv_df['Assessment'] = pd.Categorical(interv_df['Assessment'], categories=order, ordered=True)
-                interv_df.sort_values(['Assessment', 'att_type'], inplace=True)
+                # Sort interv_eff to arbotrary order and map to display labels
+                order = ['BL', 'ST', 'FU']
+                interv_df['interv_eff'] = pd.Categorical(interv_df['interv_eff'], categories=order, ordered=True)
+                interv_df.sort_values(['interv_eff', 'att_type'], inplace=True)
+                interv_df['interv_eff'] = interv_df['interv_eff'].map(vutils.get_interv_eff_label)
 
                 # Call plot
                 plot_feature_xcats(
                     interv_df,
                     feature_col='att_val',
-                    xcats_col='Assessment',
+                    xcats_col='interv_eff',
                     hue='att_type',
                     # split_violin=False,
                     plot_style='scatter',
@@ -85,6 +62,7 @@ def plot_interv_effects(
                 econd_label = vutils.get_econd_label(econd)
                 ax.set_title(f"{interv_label} - {econd_label}")
                 ax.set_ylabel(f'{att_rt_agg.title()} Score')
+                ax.set_xlabel('Intervention Effect')
 
                 # Customize legend
                 handles, labels = ax.get_legend_handles_labels()
