@@ -17,12 +17,12 @@ def test_load_rec_metadata_df():
 
 
 def test_load_session_df_wrong_format():
-    fpath = Path('session/fpath/file.txt')
-    with pytest.raises(TypeError):
+    fpath = Path('session/session_fpath/file.csv')
+    with pytest.raises(ValueError):
         io.load_session_df(fpath)
 
 
 def test_get_sid_from_session_fpath_existance_error():
-    fpath = Path("random/non/exiting/dir/session_file.csv")
+    fpath = Path("random/non/exiting/dir/session_file.txt")
     with pytest.raises(FileNotFoundError):
         io.load_session_df(fpath)

@@ -105,10 +105,10 @@ def get_raw_session_fnames():
 
 
 def load_session_df(session_fpath: Path) -> pd.DataFrame:
-    if session_fpath.suffix != '.csv':
-        raise ValueError(f'Expected session csv format, got {session_fpath}')
+    if session_fpath.suffix != '.txt':
+        raise ValueError(f'Expected session txt format, got {session_fpath}')
     if not os.path.exists(session_fpath):
-        raise FileNotFoundError(f'Session csv file {session_fpath.stem} not found at {session_fpath.parent}')
+        raise FileNotFoundError(f'Session txt file {session_fpath.stem} not found at {session_fpath.parent}')
     session_df = pd.read_csv(session_fpath, sep=",", header=7)
 
     # Convert reaction time from s into ms
