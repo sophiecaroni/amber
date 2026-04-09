@@ -145,12 +145,13 @@ def compute_audio_vis_att(tcc_v: float, ncc_v: float, tcc_av: float, ncc_av: flo
     return np.mean([tcc_v, ncc_v]) - np.mean([tcc_av, ncc_av])
 
 
-def compute_spat_att(trials_df: pd.DataFrame) -> float:
+def compute_spat_att(trials_df: pd.DataFrame, agg_fn: Callable) -> float:
     """
     Compute the spatial attention score as the overall RT cueing effect across all trials.
     :param trials_df: Trials DataFrame for a session.
-    :return: Difference in mean RT between spatially invalid and valid cue trials.
+    :param agg_fn: Aggregation function to apply to RT (e.g. np.mean or np.median).
+    :return: Difference in aggregated RT between spatially invalid and valid cue trials.
     """
     rinval_rt = trials_df.loc[trials_df['Cueing'] == 'rinval', 'RT_ms']
     rval_rt = trials_df.loc[trials_df['Cueing'] == 'rval', 'RT_ms']
-    return rinval_rt.mean() - rval_rt.mean()
+    return agg_fn(rinval_rt) - agg_fn(rval_rt)
