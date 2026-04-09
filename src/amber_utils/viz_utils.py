@@ -25,7 +25,18 @@ def plot_context():
         'xtick.major.size': 2,
         'ytick.major.size': 2,
     }
-    style_path = Path(__file__).resolve().parent.parent / 'viz' / 'despine.mplstyle'
+    _file_dir = Path(__file__).resolve().parent
+    search_roots = [Path.cwd(), *Path.cwd().parents, _file_dir, *_file_dir.parents]
+    style_path = None
+    for root in search_roots:
+        for candidate in root.rglob("despine.mplstyle"):
+            style_path = candidate
+            break
+        if style_path is not None:
+            break
+    else:
+        raise FileNotFoundError("despine.mplstyle not found")
+
     with plt.rc_context(rc=params), plt.style.context(str(style_path)):
         yield
 
