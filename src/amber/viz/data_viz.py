@@ -1,3 +1,4 @@
+import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
@@ -37,6 +38,7 @@ def plot_feature_xcats(
         elif plot_style == 'box-outliers':
             sns.boxplot(**plot_kwargs, showfliers=True)
         elif plot_style == 'scatter':
+            np.random.seed(42)  # set seed for reproducibility of the stripplot jitter
             sns.stripplot(**plot_kwargs, jitter=0.2, dodge=True, edgecolor='gray', linewidth=0.5, alpha=0.7)
             sns.violinplot(**plot_kwargs, cut=0, linewidth=0.5, alpha=0.4, inner='quart', legend=False)
         else:  # plot_style == 'box-no_outliers':
@@ -155,9 +157,4 @@ def plot_each_sid_distribution_overview(
             fig.suptitle(f'{str(sid)} ({group})')
             if save:
                 vutils.save_figure(save_dir=str(sid), fname=f'hist_{feature_col}', fig=fig)
-
-
-
-
-
-
+                
