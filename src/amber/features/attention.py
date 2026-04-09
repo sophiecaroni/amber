@@ -3,33 +3,27 @@ import numpy as np
 from typing import Callable
 
 
-def compute_att_features(df: pd.DataFrame) -> pd.DataFrame:
+def compute_att_features(df: pd.DataFrame, agg_fn: Callable) -> pd.DataFrame:
     """
-    Compute RT-based attention features for a single session. Features are computed using both mean and median RT
-    aggregation.
+    Compute RT-based attention features for a single session using a single aggregation function.
     :param df: Filtered trials DataFrame for a session.
+    :param agg_fn: Aggregation function to apply to RT (e.g. np.mean or np.median).
     :return: DataFrame with columns [att_type, att_rt_agg, att_val].
     """
-    att_dfs = []
-    for agg_fn in [np.mean, np.median]:
+    # Compute cueing effects
+    cueing_effects = compute_cueing_effects(df, agg_fn)
 
-        # Compute cueing effects
-        cueing_effects = compute_cueing_effects(df, agg_fn)
+    # Compute attention features
+    vis_sel_att = compute_vis_sel_att(**cueing_effects)
+    audio_vis_att = compute_audio_vis_att(**cueing_effects)
+    spat_att = compute_spat_att(trials_df=df, agg_fn=agg_fn)
 
-        # Compute attention features
-        vis_sel_att = compute_vis_sel_att(**cueing_effects)
-        audio_vis_att = compute_audio_vis_att(**cueing_effects)
-        spat_att = compute_spat_att(trials_df=df)
-
-        # Store attention features types, aggregation method and values in a df
-        att_dfs.append(pd.DataFrame({
-            'att_type': ['vis_sel', 'audio_vis', 'spat'],
-            'att_rt_agg': agg_fn.__name__.replace('np.', ''),
-            'att_val': [vis_sel_att, audio_vis_att, spat_att],
-        }))
-
-    # Concatenate dfs across aggregation methods
-    return pd.concat(att_dfs, ignore_index=True)
+    # Return a df storing attention features types, aggregation method and values
+    return pd.DataFrame({
+        'att_type': ['vis_sel', 'audio_vis', 'spat'],
+        'att_rt_agg': agg_fn.__name__.replace('np.', ''),
+        'att_val': [vis_sel_att, audio_vis_att, spat_att],
+    })
 
 
 def compute_cueing_effects(df: pd.DataFrame, agg_fn: Callable) -> dict:
