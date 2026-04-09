@@ -77,3 +77,9 @@ def get_session_tpoint(session_fpath: Path) -> str | None:
     # If no timepoint is found in file name, print warning and return None
     warnings.warn(f'Time-point not found in this file name! {session_fpath.stem}', UserWarning)
     return None
+
+
+def get_tpoint_interv_eff(tpoint: str) -> str | None:
+    return {'1': 'BL', '2': 'ST', '4': 'ST', '5': 'FU'}.get(tpoint[-1])
+
+

@@ -19,7 +19,7 @@ def extract_performance_features(session_fpath: Path) -> pd.DataFrame | None:
     agg_df = _filt_and_agg_session_df(session_df, rt_top_filters)
 
     # Add demographics and experimental information columns
-    add_session_metadata_to_df(agg_df, session_fpath)
+    agg_df = add_session_metadata_to_df(agg_df, session_fpath)
 
     return agg_df
 

@@ -25,6 +25,6 @@ def extract_attention_features(session_fpath: Path) -> pd.DataFrame | None:
     session_att_df = compute_att_features(filt_df)
 
     # Add demographics and experimental information columns
-    add_session_metadata_to_df(session_att_df, session_fpath)
+    session_att_df = add_session_metadata_to_df(session_att_df, session_fpath)
 
     return session_att_df

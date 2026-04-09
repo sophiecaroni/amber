@@ -4,16 +4,28 @@ from pathlib import Path
 from amber_utils import io_utils as io
 
 
-def add_session_metadata_to_df(df: pd.DataFrame, session_fpath: Path) -> None:
-    sid = prs.get_sid_from_session_fpath(session_fpath)
+def add_session_metadata_to_df(df: pd.DataFrame, session_fpath: Path) -> pd.DataFrame:
+    df = df.copy()
+    sid = prs.get_session_sid(session_fpath)
     df.insert(0, 'sid', sid)
     df.insert(1, 'amb_type', io.get_amb_type(sid))
     df.insert(2, 'age', io.get_age(sid))
     df.insert(3, 'group', io.get_group(sid))
-    df.insert(4, 'eye_cond', prs.get_eye_cond_from_session_fpath(session_fpath))
-    tpoint = prs.get_tpoint_from_session_fpath(session_fpath)
+    df.insert(4, 'eye_cond', prs.get_session_eye_cond(session_fpath))
+    tpoint = prs.get_session_tpoint(session_fpath)
     df.insert(5, 'tpoint', tpoint)
-    df.insert(6, 'interv', io.get_sid_interv(sid, tpoint))
+    if tpoint.endswith('3'):
+        first_interv, second_interv = io.get_sid_interv_pair(sid)
+        df.insert(6, 'interv', first_interv)
+        df.insert(7, 'interv_eff', 'FU')
+        df2 = df.copy()
+        df2['interv'] = second_interv
+        df2['interv_eff'] = 'BL'
+        return pd.concat([df, df2], ignore_index=True)
+    else:
+        df.insert(6, 'interv', io.get_sid_interv(sid, tpoint))
+        df.insert(7, 'interv_eff', prs.get_tpoint_interv_eff(tpoint))
+        return df
 
 
 def extract_all_sessions(extract_fn, test: bool):
@@ -38,3 +50,4 @@ def extract_all_sessions(extract_fn, test: bool):
         raise ValueError("No session tables were extracted.")
 
     return pd.concat(all_dfs, ignore_index=True)
+
