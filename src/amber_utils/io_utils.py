@@ -78,13 +78,18 @@ def get_second_interv(first_interv: str) -> str | None:
         return None
 
 
-def get_sid_interv(sid: str, tpoint: str) -> str:
+def get_sid_interv_pair(sid: str) -> tuple[str, str]:
     interv_table = load_rec_metadata_df()
     first_interv = interv_table.loc[sid, 'first_interv']
     second_interv = get_second_interv(first_interv)
+    return first_interv, second_interv
+
+
+def get_sid_interv(sid: str, tpoint: str) -> str:
+    first_interv, second_interv = get_sid_interv_pair(sid)
     if tpoint.endswith('1') or tpoint.endswith('2'):
         return first_interv
-    if tpoint.endswith('4') or tpoint.endswith('5'):
+    elif tpoint.endswith('4') or tpoint.endswith('5'):
         return second_interv
     elif tpoint.endswith('3'):
         return f"{first_interv}-{second_interv}"
