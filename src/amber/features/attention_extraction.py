@@ -21,9 +21,6 @@ def extract_attention_features(session_fpath: Path) -> pd.DataFrame | None:
     # Only consider successful trials
     filt_df = filt_df[filt_df['Accuracy'] == 1]
 
-    # Add demographics and experimental conditions as columns
-    add_session_metadata_to_df(filt_df, session_fpath)
-
     # Compute RT attention features across trials of the session
     session_att_df = compute_att_features(filt_df)
 
