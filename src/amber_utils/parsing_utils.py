@@ -4,13 +4,13 @@ import warnings
 from pathlib import Path
 
 
-def get_sid_from_session_fpath(fpath: Path) -> str | None:
+def get_session_sid(session_fpath: Path) -> str | None:
     """
-    Extract the subject ID (e.g. 'AMB01') from a session file path.
-    :param fpath: Path to the session file.
+    Extract the subject ID (e.g. 'AMB01') of a session from its file path.
+    :param session_fpath: Path to the session file.
     :return: Subject ID string, or raises ValueError if not found.
     """
-    fname = fpath.stem  # get file name without extension
+    fname = session_fpath.stem  # get file name without extension
 
     match = re.search(r"(?i)(?:^|_)AMB_?\d{2}(?:_|$)", fname)
     if match:
@@ -22,13 +22,13 @@ def get_sid_from_session_fpath(fpath: Path) -> str | None:
     raise ValueError(f"AMB-sid not found in this file name! {fname}")
 
 
-def get_eye_cond_from_session_fpath(fpath: Path) -> str | None:
+def get_session_eye_cond(session_fpath: Path) -> str | None:
     """
-    Extract the eye condition ('DO' or 'ND') from a session file path.
-    :param fpath: Path to the session file.
+    Extract the eye condition ('DO' or 'ND') of a session from its file path.
+    :param session_fpath: Path to the session file.
     :return: Eye condition string, or None with a warning if not found.
     """
-    fpath_str = str(fpath)
+    fpath_str = str(session_fpath)
     path_parts = np.array([i.lower() for i in fpath_str.split('_')])
 
     # Discard directories, focus on file name
@@ -50,17 +50,17 @@ def get_eye_cond_from_session_fpath(fpath: Path) -> str | None:
         return m.group(1).upper()
 
     # If no eye condition is found in file name, print warning and return None
-    warnings.warn(f'Eye-condition not found in this file name! {fpath.stem}', UserWarning)
+    warnings.warn(f'Eye-condition not found in this file name! {session_fpath.stem}', UserWarning)
     return None
 
 
-def get_tpoint_from_session_fpath(fpath: Path) -> str | None:
+def get_session_tpoint(session_fpath: Path) -> str | None:
     """
-    Extract the timepoint ('T1' - 'T5') from a session file path.
-    :param fpath: Path to the session file.
+    Extract the timepoint ('T1' - 'T5') of a session from its file path.
+    :param session_fpath: Path to the session file.
     :return: Timepoint string, or None with a warning if not found.
     """
-    fpath_str = str(fpath)
+    fpath_str = str(session_fpath)
     path_parts = np.array([i.lower() for i in fpath_str.split('_')])
 
     # Discard directories, focus on file name
@@ -75,5 +75,5 @@ def get_tpoint_from_session_fpath(fpath: Path) -> str | None:
         return tpoint.upper()
 
     # If no timepoint is found in file name, print warning and return None
-    warnings.warn(f'Time-point not found in this file name! {fpath.stem}', UserWarning)
+    warnings.warn(f'Time-point not found in this file name! {session_fpath.stem}', UserWarning)
     return None

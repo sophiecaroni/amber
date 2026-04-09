@@ -9,7 +9,7 @@ from pathlib import Path
     ]
 )
 def test_get_tpoint_from_session_fpath(inp, expected):
-    assert prs.get_tpoint_from_session_fpath(inp) == expected
+    assert prs.get_session_tpoint(inp) == expected
 
 
 @pytest.mark.parametrize(
@@ -19,10 +19,10 @@ def test_get_tpoint_from_session_fpath(inp, expected):
     ]
 )
 def test_get_eye_cond_from_session_fpath(inp, expected):
-    assert prs.get_eye_cond_from_session_fpath(inp) == expected
+    assert prs.get_session_eye_cond(inp) == expected
 
 
 def test_get_sid_from_session_fpath_raises_error():
     fpath = Path("session_file_without_sid.txt")
     with pytest.raises(ValueError):
-        prs.get_sid_from_session_fpath(fpath)
+        prs.get_session_sid(fpath)
