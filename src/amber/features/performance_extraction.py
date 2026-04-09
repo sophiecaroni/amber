@@ -17,7 +17,7 @@ def extract_performance_features(session_fpath: Path) -> pd.DataFrame | None:
     session_df = io.load_session_df(session_fpath)
 
     # Aggregate using mean-based and median-based RT filtering, separately
-    rt_top_filters = [None, 3]
+    rt_top_filters = [3]
     mean_agg_df = _filt_and_agg_session_df(session_df, rt_top_filters, use_median=False)  # RT is in column 'rt_mean'
     med_agg_df = _filt_and_agg_session_df(session_df, rt_top_filters, use_median=True)  # RT is in column 'rt_med'
 
