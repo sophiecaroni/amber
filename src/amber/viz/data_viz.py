@@ -90,7 +90,7 @@ def compare_filt(
 
         for (filt_cond, sub_df), ax in zip(df.groupby('filt_cond'), axes):
             plot_fun(df=sub_df, ax=ax, **plot_fun_kwargs)
-            ax.set_title(filt_cond.title())
+            ax.set_title(str(filt_cond).title())
 
         if save:
             fname = f'plot_filt'
