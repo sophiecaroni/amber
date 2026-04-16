@@ -24,8 +24,8 @@ def get_raw_data_path() -> Path:
     return set_for_save(get_data_path() / 'raw')
 
 
-def get_results_path() -> Path:
-    return set_for_save(get_outputs_path() / 'results')
+def get_tables_path() -> Path:
+    return set_for_save(get_outputs_path() / 'tables')
 
 
 def get_figures_path() -> Path:
@@ -97,8 +97,8 @@ def get_sid_interv(sid: str, tpoint: str) -> str:
         raise ValueError(f'Invalid tpoint {tpoint}')
 
 
-def load_results_df(fname, sid: str | None = None) -> pd.DataFrame:
-    fpath = get_results_path()
+def load_df(fname, sid: str | None = None) -> pd.DataFrame:
+    fpath = get_tables_path()
     if sid:
         fpath /= sid
     fpath /= f'{fname}.csv'

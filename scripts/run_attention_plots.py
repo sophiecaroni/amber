@@ -7,7 +7,7 @@ def run_all_interv_effects_plots(show: bool, test: bool, save: bool = False):
     Run functions for plotting intervention effects over time for all groups and aggregation metrics.
     :return: None
     """
-    df = pd.read_csv('/Users/sophiecaroni/amber/outputs/results/attention_features.csv', index_col=0)
+    df = pd.read_csv('/Users/sophiecaroni/amber/outputs/tables/attention_features.csv', index_col=0)
     for agg_metric, sub_df in df.groupby('att_rt_agg'):
 
         # By group

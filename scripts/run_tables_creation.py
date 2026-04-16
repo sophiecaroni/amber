@@ -8,7 +8,7 @@ def extract_all_session_perf_table(test: bool, save: bool = False):
     all_session_perf_df = extract_all_sessions(extract_performance_features, test)
 
     if save:
-        out_dir = io.get_results_path()
+        out_dir = io.get_tables_path()
         fname = 'performance_summary.csv'
         all_session_perf_df.to_csv(out_dir / fname)
         print(f'\n\tExporting {fname}...\n\tSaved ✅')
@@ -22,7 +22,7 @@ def extract_all_session_att_table(test: bool, save: bool = False):
     all_session_att_df = extract_all_sessions(extract_attention_features, test)
 
     if save:
-        out_dir = io.get_results_path()
+        out_dir = io.get_tables_path()
         fname = 'attention_features.csv'
         all_session_att_df.to_csv(out_dir / fname)
         print(f'\n\tExporting {fname}...\n\tSaved ✅')

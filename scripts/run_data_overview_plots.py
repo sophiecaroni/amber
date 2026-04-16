@@ -4,7 +4,7 @@ import numpy as np
 
 
 def run_data_overview_plots(show: bool, save: bool = False):
-    df = io.load_results_df('performance_summary')
+    df = io.load_df('performance_summary')
 
     # 1) Group level
     # Trials count
