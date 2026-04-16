@@ -85,6 +85,8 @@ def compare_filt(
     with plot_context():
         n_subplots = len(df['filt_cond'].unique())
         fig, axes = plt.subplots(1, n_subplots, sharey=True, figsize=(3*n_subplots, 3))
+        if n_subplots == 1:
+            axes = [axes]
 
         for (filt_cond, sub_df), ax in zip(df.groupby('filt_cond'), axes):
             plot_fun(df=sub_df, ax=ax, **plot_fun_kwargs)
