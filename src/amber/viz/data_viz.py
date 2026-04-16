@@ -80,6 +80,7 @@ def compare_filt(
         df: pd.DataFrame,
         plot_fun,
         save: bool = False,
+        show: bool = False,
         **plot_fun_kwargs
 ) -> Figure:
     with plot_context():
@@ -103,6 +104,8 @@ def compare_filt(
             else:
                 fname += f"_{plot_fun.__name__.replace('plot_', '').replace('compare_', '').replace('differences', '')}"
             vutils.save_figure(save_dir=None, fname=fname, fig=fig)
+        if show:
+            plt.show()
     return fig
 
 
@@ -149,6 +152,7 @@ def plot_each_sid_distribution_overview(
         df: pd.DataFrame,
         feature_col: str,
         save: bool = False,
+        show: bool = False,
         **kwargs
 ) -> None:
     with plot_context():
@@ -159,4 +163,6 @@ def plot_each_sid_distribution_overview(
             fig.suptitle(f'{str(sid)} ({group})')
             if save:
                 vutils.save_figure(save_dir=str(sid), fname=f'hist_{feature_col}', fig=fig)
+            if show:
+                plt.show()
                 
