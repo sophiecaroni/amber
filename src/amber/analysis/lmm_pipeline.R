@@ -3,7 +3,9 @@ library(car)
 library(emmeans)
 library(dplyr)
 
-wd <- "/Users/sophiecaroni/amber/outputs/stats"
+script_dir <- dirname(normalizePath(sub("--file=", "", grep("--file=", commandArgs(trailingOnly=FALSE), value=TRUE)[1])))
+project_root <- dirname(dirname(dirname(script_dir)))
+wd <- file.path(project_root, "outputs", "stats")
 setwd(wd)
 
 # -------------------------

@@ -14,6 +14,7 @@ def set_for_save(path: Path) -> Path:
 
 def get_project_path() -> Path:
     return Path(__file__).resolve().parent.parent
+    return Path(__file__).resolve().parent.parent.parent
 
 
 def get_data_path() -> Path:
