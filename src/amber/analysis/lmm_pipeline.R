@@ -152,9 +152,14 @@ model_to_interpret <- switch(
 )
 
 # -------------------------
-# 5. Residual diagnostics on selected model
+# 5. Diagnostics on selected model
 # -------------------------
 
+# Check correct structure of random effects
+cat("\n--- Random effects: selected model ---\n")
+print(VarCorr(model_to_interpret))  # if (all) intercept-slope correlations are near 0, || (uncorrelated slopes) would be equally appropriate
+
+# Check residuals normality
 if (save) {
   # Fitted vs residuals — checks homoscedasticity
   png(file.path(figures_dir, paste0("fitted_vs_residuals", "_", metric, ".png")))
