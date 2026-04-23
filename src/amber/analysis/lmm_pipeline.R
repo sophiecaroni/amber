@@ -50,82 +50,102 @@ df <- raw_df %>%
 
 # -------------------------
 # 2. Define nested models
-#
-# Notes.
-# - (1 + interv_eff | sid): both random intercept AND random slope for interv_eff vary by subject, as we assume subjects
-#                           start at different baseline RT (intercept) and subjects improve at different rates over
-#                           time (slope).
-# - (1 + eye_cond | sid): both random intercept AND random slope for eye_cond vary by subject, as we assume subjects have
-#                         different baseline RT for each eye (intercept) and amblyopia affects the dofference between
-#                         dominant and non-dominant eyes differently.
 # -------------------------
 
 # Full model: all interactions up to 4-way among primary factors + all main effects + age covariate
-full_formula <- y ~ amb_type * eye_cond * interv * interv_eff  # * is equal as doing (sum of all factors)^4
-                    + age
-                    + (1 + interv_eff | sid)
-                    + (1 + eye_cond | sid)
+full_formula <- y ~ amb_type * eye_cond * interv * interv_eff +  # * expands to all interactions up to 4-way, equivalent to (sum of all factors)^4
+                    age +
+                    (1 + interv_eff | sid) +  # (1 + factor_a | factor_b) to model random intercept AND random slope for factor_a, as they both vary by factor_b levels
+                    (1 + eye_cond | sid)
 
 # no-4-way: all interactions up to 3-way among primary factors + all main effects + age covariate
-no_4way_formula <- y ~ (amb_type + eye_cond + interv + interv_eff)^3  # syntax needed to exclude the 4-way interaction
-                        + age
-                        + (1 + interv_eff | sid)
-                        + (1 + eye_cond | sid)
+no_4way_formula <- y ~ (amb_type + eye_cond + interv + interv_eff)^3 +
+                        age +
+                        (1 + interv_eff | sid) +
+                        (1 + eye_cond | sid)
+
+# no-3-way: all interactions up to 2-way among primary factors + all main effects + age covariate
+no_3way_formula <- y ~ (amb_type + eye_cond + interv + interv_eff)^2 +
+                        age +
+                        (1 + interv_eff | sid) +
+                        (1 + eye_cond | sid)
 
 # Main effects only
-main_formula <- y ~ amb_type + eye_cond + interv + interv_eff + age
-                    + (1 + interv_eff | sid)
-                    + (1 + eye_cond | sid)
+main_formula <- y ~ amb_type + eye_cond + interv + interv_eff + age +
+                    (1 + interv_eff | sid) +
+                    (1 + eye_cond | sid)
 
 # -------------------------
 # 3. Fit nested models
 # -------------------------
-m_full <- lmer(full_formula, data = df, REML = FALSE)
+reml <- FALSE
 
-m_no_4way <- lmer(no_4way_formula, data = df, REML = FALSE)
+m_full <- lmer(full_formula, data = df, REML = reml)
 
-m_main <- lmer(main_formula, data = df, REML = FALSE)
+m_no_4way <- lmer(no_4way_formula, data = df, REML = reml)
+
+m_no_3way <- lmer(no_3way_formula, data = df, REML = reml)
+
+m_main <- lmer(main_formula, data = df, REML = reml)
+
+converged <- function(model) is.null(model@optinfo$conv$lme4$messages)
+valid <- function(model) converged(model) && !isSingular(model)  # a model is valid if it converged and its random effects structure is not degenerate
+
+cat("\n--- Convergence and singularity check ---\n")
+cat("m_full    — converged:", converged(m_full),    "| singular:", isSingular(m_full),    "\n")
+cat("m_no_4way — converged:", converged(m_no_4way), "| singular:", isSingular(m_no_4way), "\n")
+cat("m_no_3way — converged:", converged(m_no_3way), "| singular:", isSingular(m_no_3way), "\n")
+cat("m_main    — converged:", converged(m_main),    "| singular:", isSingular(m_main),    "\n")
 
 
 # -------------------------
-# 4. Model decision
+# 4. Best model selection
 # -------------------------
 
-# Compute AI
-cat("\n--- AIC comparison ---\n")
-print(AIC(m_full, m_no_4way, m_main))
-
-# Run likelihood-ratio test to verify if removing the 4-way interaction is significant
-cat("\n--- ANOVA: Full vs no-4-way ---\n")
-full_vs_no4 <- anova(m_full, m_no_4way)
+# Run likelihood-ratio test (LRT) to verify if removing the 4-way interaction is significant
+cat("\n--- LRT: Full vs no-4-way ---\n")
+full_vs_no4 <- anova(m_full, m_no_4way, test='LRT')
 print(full_vs_no4)
 p_full_vs_no4 <- tryCatch(full_vs_no4$`Pr(>Chisq)`[2], error = function(e) NA_real_)  # get p-values
 
-# Run likelihood-ratio test to verify if removing the all interactions up to 3-way is significant
-cat("\n--- ANOVA: no-4-way vs main effects ---\n")
-no4_vs_main <- anova(m_no_4way, m_main)
-print(no4_vs_main)
-p_no4_vs_main <- tryCatch(no4_vs_main$`Pr(>Chisq)`[2], error = function(e) NA_real_)  # get p-values
+# Run LRT to verify if removing 3-way interactions is significant
+cat("\n--- LRT: no-4-way vs no-3-way ---\n")
+no4_vs_no3 <- anova(m_no_4way, m_no_3way)
+print(no4_vs_no3)
+p_no4_vs_no3 <- tryCatch(no4_vs_no3$`Pr(>Chisq)`[2], error = function(e) NA_real_)
+
+# Run LRT to verify if removing 2-way interactions is significant
+cat("\n--- LRT: no-3-way vs main effects ---\n")
+no3_vs_main <- anova(m_no_3way, m_main)
+print(no3_vs_main)
+p_no3_vs_main <- tryCatch(no3_vs_main$`Pr(>Chisq)`[2], error = function(e) NA_real_)
 
 # Initialise best_model to most complex model
-best_model <- "m_full"  
+best_model <- "m_full"
 
-# Chose no-4-way model over full model if their likelihood-ratio test didn't detect a difference
-if (!is.na(p_full_vs_no4) && p_full_vs_no4 >= 0.05) { 
+# Step down if m_full is not valid or if LRT didn't detect a difference to no-4-way
+if (!valid(m_full) || is.na(p_full_vs_no4) || p_full_vs_no4 >= 0.05) {
   best_model <- "m_no_4way"
 }
-
-# Chose main model over no-4-way  if their likelihood-ratio test didn't detect a difference
-if (best_model == "m_no_4way" && !is.na(p_no4_vs_main) && p_no4_vs_main >= 0.05) {  # only test if no-4-way was selected in the previous step
+# If no-4way was previously selected, step down if m_no_4way is not valid or if LRT didn't detect a difference to no-3-way
+if (best_model == "m_no_4way" && (!valid(m_no_4way) || is.na(p_no4_vs_no3) || p_no4_vs_no3 >= 0.05)) {
+  best_model <- "m_no_3way"
+}
+# If no-3-way was previously selected, step down if m_no_3way is not valid or if LRT didn't detect a difference not valid main
+if (best_model == "m_no_3way" && (!valid(m_no_3way) || is.na(p_no3_vs_main) || p_no3_vs_main >= 0.05)) {
   best_model <- "m_main"
+}
+# Warn if even the simplest model is not valid — results should not be trusted
+if (best_model == "m_main" && !valid(m_main)) {
+  cat("WARNING: even the main effects model failed to converge or is singular.\n")
 }
 
 cat("\nSELECTED_MODEL=", best_model, "\n", sep = "")
-
 model_to_interpret <- switch(
   best_model,
   m_full = m_full,
   m_no_4way = m_no_4way,
+  m_no_3way = m_no_3way,
   m_main = m_main
 )
 
