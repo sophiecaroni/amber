@@ -72,10 +72,12 @@ main_formula <- y ~ eye_cond + interv + interv_eff + age +
 # 3. Fit nested models
 # -------------------------
 reml <- FALSE
+ctrl <- lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 2e5))  # increase iterations to improve convergence
 
-m_full <- lmer(full_formula, data = df, REML = reml)
-m_no_3way <- lmer(no_3way_formula, data = df, REML = reml)
-m_main <- lmer(main_formula, data = df, REML = reml)
+m_full <- lmer(full_formula, data = df, REML = reml, control = ctrl)
+m_no_4way <- lmer(no_4way_formula, data = df, REML = reml, control = ctrl)
+m_no_3way <- lmer(no_3way_formula, data = df, REML = reml, control = ctrl)
+m_main <- lmer(main_formula, data = df, REML = reml, control = ctrl)
 
 converged <- function(model) is.null(model@optinfo$conv$lme4$messages)
 valid <- function(model) converged(model) && !isSingular(model)  # a model is valid if it converged and its random effects structure is not degenerate
