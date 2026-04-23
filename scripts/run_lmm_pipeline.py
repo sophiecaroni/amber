@@ -14,6 +14,8 @@ def run_lmm_pipeline() -> None:
     metrics = (
         "rt_med",
         "rt_mean",
+        "rt_med_log",
+        "rt_mean_log",
     )
 
     for metric in metrics:

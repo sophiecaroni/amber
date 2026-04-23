@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from pathlib import Path
 from amber_utils import io_utils as io
 from amber_utils.comp_utils import mask_in_bounds_rows
@@ -17,13 +18,17 @@ def extract_performance_features(session_fpath: Path) -> pd.DataFrame | None:
     session_df = io.load_session_df(session_fpath)
 
     # Aggregate using mean-based and median-based RT filtering, separately
-    rt_top_filters = [3]
+    rt_top_filters = [3, 2.5, None]
     mean_agg_df = _filt_and_agg_session_df(session_df, rt_top_filters, use_median=False)  # RT is in column 'rt_mean'
     med_agg_df = _filt_and_agg_session_df(session_df, rt_top_filters, use_median=True)  # RT is in column 'rt_med'
 
     # The two dfs are the same except for RT columns; so merge RT column from med_agg_df ('rt_med') into mean_agg_df
     merge_cols = _GROUP_COLS + ['filt_cond']
     agg_df = mean_agg_df.merge(med_agg_df[merge_cols + ['rt_med']], on=merge_cols, how='left')
+
+    # Add log-transformed RT features
+    agg_df['rt_mean_log'] = np.log(agg_df['rt_mean'])
+    agg_df['rt_med_log'] = np.log(agg_df['rt_med'])
 
     # Add demographics and experimental information columns
     agg_df = add_session_metadata_to_df(agg_df, session_fpath)

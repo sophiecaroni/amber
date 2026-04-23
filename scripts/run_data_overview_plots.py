@@ -13,6 +13,7 @@ def run_data_overview_plots(show: bool, save: bool = False):
     # Plot accuracy and reaction time features...
     features = [
         'acc', 'rt_mean', 'rt_med',
+        'rt_mean_log', 'rt_med_log'
     ]
     for feature in features:
         for group_col in [None, 'group']:
