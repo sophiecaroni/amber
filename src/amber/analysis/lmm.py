@@ -63,7 +63,7 @@ def test(rt_metric_col: str) -> None:
     df_path = io.get_tables_path() / 'performance_summary.csv'
     print(f"\n####################################### {rt_metric_col} #######################################\n")
     script_out = run_rscript(
-        "lmm_testing.R",
+        "lmm_pipeline.R",
         [rt_metric_col, df_path],
         verbose=True,
     )
