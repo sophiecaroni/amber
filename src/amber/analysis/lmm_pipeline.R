@@ -167,3 +167,31 @@ if (save) {
 }
 
 
+# -------------------------
+# 6. Inference on the selected model
+# -------------------------
+
+# If Type III fails on the selected model (e.g. aliased coefficients due to rank deficiency), fall back to simpler models
+fallback_models <- switch(
+  best_model,
+  m_full    = list(m_no_4way, m_no_3way, m_main),
+  m_no_4way = list(m_no_3way, m_main),
+  m_no_3way = list(m_main),
+  m_main    = list()
+)
+
+# Run Type III Wald chi-square tests to identify which predictors/interactions have a significant effect
+cat("\n--- Type III tests: selected model ---\n")
+anova_result <- tryCatch(
+  car::Anova(model_to_interpret, type = "III"),
+  error = function(e) {
+    cat("Note: Type III failed on selected model (aliased coefficients), trying fallbacks.\n")
+    result <- NULL
+    for (m in fallback_models) {
+      result <- tryCatch(car::Anova(m, type = "III"), error = function(e) NULL)
+      if (!is.null(result)) break
+    }
+    result
+  }
+)
+print(anova_result)
