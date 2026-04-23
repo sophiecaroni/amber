@@ -59,11 +59,11 @@ def select_best_fit_method() -> str:
     return _parse_rscript_output(script_out.stdout, "PROPOSED_BEST_FIT_METHOD=")
 
 
-def test(rt_metric_col: str) -> None:
+def test(rt_metric_col: str, save: bool = False) -> None:
     df_path = io.get_tables_path() / 'performance_summary.csv'
     print(f"\n####################################### {rt_metric_col} #######################################\n")
     script_out = run_rscript(
         "lmm_pipeline.R",
-        [rt_metric_col, df_path],
+        [rt_metric_col, df_path, save],
         verbose=True,
     )

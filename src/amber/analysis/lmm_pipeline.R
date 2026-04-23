@@ -3,17 +3,33 @@ library(car)
 library(emmeans)
 library(dplyr)
 
+# -------------------------
+# 0. Setup and retrieve args
+# -------------------------
+# Setup working and saving directories
 script_dir <- dirname(normalizePath(sub("--file=", "", grep("--file=", commandArgs(trailingOnly=FALSE), value=TRUE)[1])))
 project_root <- dirname(dirname(dirname(script_dir)))
 wd <- file.path(project_root, "outputs", "stats")
+dir.create(wd, recursive = TRUE, showWarnings = FALSE)
 setwd(wd)
 
-# -------------------------
-# 0. Retrieve args
-# -------------------------
+# Extract arguments
 args <- commandArgs(trailingOnly = TRUE)
 metric <- args[1]
 df_fpath <- args[2]
+save <- as.logical(args[3])
+
+if (save) {
+  figures_dir <- file.path(project_root, "outputs", "figures", "lmm")
+  dir.create(figures_dir, recursive = TRUE, showWarnings = FALSE)
+}
+
+if (save) {
+  log_con <- file(file.path(wd, paste0("report", "_", metric, '.txt')), open = "wt")
+  sink(log_con, split = TRUE)  # print/cat outputs
+  sink(log_con, type = "message")  # warnings
+  on.exit({ sink(type = "message"); sink(); close(log_con) }, add = TRUE)  # use on.exit to run the teardown regardless of how the script exits (error or normal)
+}
 
 # -------------------------
 # 1. Load and prepare data
@@ -117,10 +133,17 @@ model_to_interpret <- switch(
 # 5. Residual diagnostics on selected model
 # -------------------------
 
-# Fitted vs residuals — checks homoscedasticity
-plot(model_to_interpret)
+if (save) {
+  # Fitted vs residuals — checks homoscedasticity
+  png(file.path(figures_dir, paste0("fitted_vs_residuals", "_", metric, ".png")))
+  plot(model_to_interpret)
+  invisible(dev.off())  # write file and close figure
 
-# QQ plot — checks normality of residuals
-qqnorm(residuals(model_to_interpret))
-qqline(residuals(model_to_interpret))
+  # QQ plot — checks normality of residuals
+  png(file.path(figures_dir, paste0("qq", "_", metric, ".png")))
+  qqnorm(residuals(model_to_interpret))
+  qqline(residuals(model_to_interpret))
+  invisible(dev.off())  # write file and close figure
+}
+
 
