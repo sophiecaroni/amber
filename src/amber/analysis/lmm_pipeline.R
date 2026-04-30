@@ -54,7 +54,7 @@ df <- raw_df %>%
 # -------------------------
 
 # Random effects structure: random intercepts and random slopes for interv_eff and eye_cond, both varying by subject
-random_terms <- "(1 + interv_eff | sid) + (1 + eye_cond | sid)"
+random_terms <- "(1 + interv_eff + eye_cond | sid)"
 
 # Full model: all interactions up to 4-way among primary factors + all main effects + age covariate
 full_formula <- as.formula(paste(
@@ -84,12 +84,12 @@ main_formula <- as.formula(paste(
 # 3. Fit nested models
 # -------------------------
 reml <- FALSE
-ctrl <- lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 2e5))  # increase iterations to improve convergence
 
-m_full <- lmer(full_formula, data = df, REML = reml, control = ctrl)
-m_no_4way <- lmer(no_4way_formula, data = df, REML = reml, control = ctrl)
-m_no_3way <- lmer(no_3way_formula, data = df, REML = reml, control = ctrl)
-m_main <- lmer(main_formula, data = df, REML = reml, control = ctrl)
+m_full <- lmer(full_formula, data = df, REML = reml)
+m_no_4way <- lmer(no_4way_formula, data = df, REML = reml)
+m_no_3way <- lmer(no_3way_formula, data = df, REML = reml)
+m_main <- lmer(main_formula, data = df, REML = reml)
+
 models <- list(m_full = m_full, m_no_4way = m_no_4way, m_no_3way = m_no_3way, m_main = m_main)
 model_names <- names(models)
 if (verbose) {
