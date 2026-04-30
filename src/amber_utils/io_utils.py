@@ -4,6 +4,7 @@ from pathlib import Path
 from glob import glob
 from os.path import join
 from amber_utils.comp_utils import s_to_ms
+from amber_utils.config_utils import get_local_root
 
 
 def set_for_save(path: Path) -> Path:
@@ -12,13 +13,8 @@ def set_for_save(path: Path) -> Path:
     return path
 
 
-def get_project_path() -> Path:
-    return Path(__file__).resolve().parent.parent
-    return Path(__file__).resolve().parent.parent.parent
-
-
 def get_data_path() -> Path:
-    return get_project_path() / 'data'
+    return get_local_root() / 'data'
 
 
 def get_raw_data_path() -> Path:
@@ -34,7 +30,7 @@ def get_figures_path() -> Path:
 
 
 def get_outputs_path(sid: str | None = None) -> Path:
-    outputs_path = get_project_path() / 'outputs'
+    outputs_path = get_local_root() / 'outputs'
 
     if sid is None:
         return outputs_path

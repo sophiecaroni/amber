@@ -26,3 +26,12 @@ def test_get_sid_from_session_fpath_existance_error():
     fpath = Path("random/non/exiting/dir/session_file.txt")
     with pytest.raises(FileNotFoundError):
         io.load_session_df(fpath)
+
+
+def test_get_local_root(tmp_path, monkeypatch):
+    config = tmp_path / "config.ini"
+    config.write_text("[Paths]\nlocal_root = /some/path\n")
+    assert \
+        io.get_local_root(config_path=str(config)) == \
+        Path("/some/path")
+
