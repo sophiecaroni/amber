@@ -90,59 +90,63 @@ m_no_4way <- lmer(no_4way_formula, data = df, REML = reml, control = ctrl)
 m_no_3way <- lmer(no_3way_formula, data = df, REML = reml, control = ctrl)
 m_main <- lmer(main_formula, data = df, REML = reml, control = ctrl)
 
+# -------------------------
+# 4. Verify model validity
+# -------------------------
 converged <- function(model) is.null(model@optinfo$conv$lme4$messages)
-valid <- function(model) converged(model) && !isSingular(model)  # a model is valid if it converged and its random effects structure is not degenerate
 
-cat("\n--- Convergence and singularity check ---\n")
+cat("\n--- Check of model validity ---\n")
 cat("m_full — converged:", converged(m_full), "| singular:", isSingular(m_full),    "\n")
 cat("m_no_4way — converged:", converged(m_no_4way), "| singular:", isSingular(m_no_4way), "\n")
 cat("m_no_3way — converged:", converged(m_no_3way), "| singular:", isSingular(m_no_3way), "\n")
 cat("m_main — converged:", converged(m_main), "| singular:", isSingular(m_main), "\n")
 
+valid <- function(model) converged(model) && !isSingular(model)  # a model is valid if it converged and its random effects structure is not degenerate
+valid_models <- Filter(valid, list(m_full = m_full, m_no_4way = m_no_4way, m_no_3way = m_no_3way, m_main = m_main))
+
+# Quit if no model is valid
+if (length(valid_models) == 0) {
+    cat("\nSELECTED_MODEL=No valid model found !\n")
+    quit(save="no")
+}
+
 
 # -------------------------
-# 4. Best model selection
+# 5. Select best model
 # -------------------------
 
-# Run likelihood-ratio test (LRT) to verify if removing the 4-way interaction is significant
-cat("\n--- LRT: Full vs no-4-way ---\n")
-full_vs_no4 <- anova(m_full, m_no_4way, test='LRT')
-print(full_vs_no4)
-p_full_vs_no4 <- tryCatch(full_vs_no4$`Pr(>Chisq)`[2], error = function(e) NA_real_)  # get p-values
+# Initialise best_model to most complex model (first in valid_models)
+model_names <- names(valid_models)
+best_model <- model_names[1]
 
-# Run LRT to verify if removing 3-way interactions is significant
-cat("\n--- LRT: no-4-way vs no-3-way ---\n")
-no4_vs_no3 <- anova(m_no_4way, m_no_3way)
-print(no4_vs_no3)
-p_no4_vs_no3 <- tryCatch(no4_vs_no3$`Pr(>Chisq)`[2], error = function(e) NA_real_)
+# If only one model was valid, select it as best model
+if (length(valid_models) == 1) {
+    cat("\nSELECTED_MODEL=", best_model, "\n", sep = "")
 
-# Run LRT to verify if removing 2-way interactions is significant
-cat("\n--- LRT: no-3-way vs main effects ---\n")
-no3_vs_main <- anova(m_no_3way, m_main)
-print(no3_vs_main)
-p_no3_vs_main <- tryCatch(no3_vs_main$`Pr(>Chisq)`[2], error = function(e) NA_real_)
+# If multiple models where valid, run LRT pairwise comparison between models
+} else {
 
-# Initialise best_model to most complex model
-best_model <- "m_full"
+    # Run LRT between consecutive valid models, stepping down to less complext model if not significant
+    for (i in seq_len(length(valid_models) - 1)) {
+          name_complex <- model_names[i]
+          name_simpler <- model_names[i + 1]
 
-# Step down if m_full is not valid or if LRT didn't detect a difference to no-4-way
-if (!valid(m_full) || is.na(p_full_vs_no4) || p_full_vs_no4 >= 0.05) {
-  best_model <- "m_no_4way"
-}
-# If no-4way was previously selected, step down if m_no_4way is not valid or if LRT didn't detect a difference to no-3-way
-if (best_model == "m_no_4way" && (!valid(m_no_4way) || is.na(p_no4_vs_no3) || p_no4_vs_no3 >= 0.05)) {
-  best_model <- "m_no_3way"
-}
-# If no-3-way was previously selected, step down if m_no_3way is not valid or if LRT didn't detect a difference not valid main
-if (best_model == "m_no_3way" && (!valid(m_no_3way) || is.na(p_no3_vs_main) || p_no3_vs_main >= 0.05)) {
-  best_model <- "m_main"
-}
-# Warn if even the simplest model is not valid — results should not be trusted
-if (best_model == "m_main" && !valid(m_main)) {
-  cat("WARNING: even the main effects model failed to converge or is singular.\n")
+        cat("\n--- LRT:", name_complex, "(complex) vs", name_simpler, "(simpler) ---\n")
+        complex_model = valid_models[[i]]
+        simpler_model = valid_models[[i + 1]]
+        lrt <- anova(complex_model, simpler_model, test = 'LRT')
+        print(lrt)
+        p <- tryCatch(lrt$`Pr(>Chisq)`[2], error = function(e) NA_real_)
+
+        if (is.na(p) || p >= 0.05) {
+            best_model <- name_simpler  # no significant difference, step down to simpler model
+        } else {
+            break  # significant difference, keep the most complex model
+        }
+    }
+    cat("\nSELECTED_MODEL=", best_model, "\n", sep = "")
 }
 
-cat("\nSELECTED_MODEL=", best_model, "\n", sep = "")
 model_to_interpret <- switch(
   best_model,
   m_full = m_full,
