@@ -17,7 +17,8 @@ setwd(wd)
 args <- commandArgs(trailingOnly = TRUE)
 metric <- args[1]
 df_fpath <- args[2]
-save <- as.logical(args[3])
+verbose <- as.logical(args[3])
+save <- as.logical(args[4])
 
 if (save) {
   figures_dir <- file.path(project_root, "outputs", "figures", "LMM")
@@ -89,6 +90,15 @@ m_full <- lmer(full_formula, data = df, REML = reml, control = ctrl)
 m_no_4way <- lmer(no_4way_formula, data = df, REML = reml, control = ctrl)
 m_no_3way <- lmer(no_3way_formula, data = df, REML = reml, control = ctrl)
 m_main <- lmer(main_formula, data = df, REML = reml, control = ctrl)
+models <- list(m_full = m_full, m_no_4way = m_no_4way, m_no_3way = m_no_3way, m_main = m_main)
+model_names <- names(models)
+if (verbose) {
+    for (i in seq_len(length(models))) {
+        cat('SUMMARY OF', model_names[i], ':')
+        print(summary(models[[i]], correlations=TRUE))
+    }
+}
+
 
 # -------------------------
 # 4. Verify model validity
@@ -102,7 +112,7 @@ cat("m_no_3way — converged:", converged(m_no_3way), "| singular:", isSingular(
 cat("m_main — converged:", converged(m_main), "| singular:", isSingular(m_main), "\n")
 
 valid <- function(model) converged(model) && !isSingular(model)  # a model is valid if it converged and its random effects structure is not degenerate
-valid_models <- Filter(valid, list(m_full = m_full, m_no_4way = m_no_4way, m_no_3way = m_no_3way, m_main = m_main))
+valid_models <- Filter(valid, models)
 
 # Quit if no model is valid
 if (length(valid_models) == 0) {

@@ -10,7 +10,7 @@
 import amber.analysis.lmm as lmm
 
 
-def run_lmm_pipeline(save: bool = False) -> None:
+def run_lmm_pipeline(save: bool = False, verbose: bool = False) -> None:
     metrics = (
         "rt_med",
         "rt_mean",
@@ -20,10 +20,11 @@ def run_lmm_pipeline(save: bool = False) -> None:
 
     for metric in metrics:
         # fit_method = lmm.select_best_fit_method(rt_metric_str=metric)
-        lmm.test(rt_metric_col=metric, save=save)
+        lmm.test(rt_metric_col=metric, verbose=verbose, save=save)
 
 
 if __name__ == "__main__":
     run_lmm_pipeline(
         save=False,
+        verbose=False,
     )
