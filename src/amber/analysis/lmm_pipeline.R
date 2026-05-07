@@ -89,7 +89,7 @@ main_formula <- as.formula(paste(
 # -------------------------
 # 3. Fit nested models
 # -------------------------
-reml <- FALSE
+reml <- FALSE  # for parameters estimation; "ML (REML = FALSE) should be used if you decide to use likelihood ratio tests to test fixed effects"  https://www.zoology.ubc.ca/~schluter/R/Model.html
 
 m_full <- lmer(full_formula, data = df, REML = reml)
 m_no_4way <- lmer(no_4way_formula, data = df, REML = reml)
