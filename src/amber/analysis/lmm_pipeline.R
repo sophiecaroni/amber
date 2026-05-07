@@ -20,8 +20,9 @@ df_fpath <- args[2]
 verbose <- as.logical(args[3])
 save <- as.logical(args[4])
 
+figures_dir <- file.path(project_root, "outputs", "figures", "LMM")
+
 if (save) {
-  figures_dir <- file.path(project_root, "outputs", "figures", "LMM")
   dir.create(figures_dir, recursive = TRUE, showWarnings = FALSE)
 }
 
@@ -48,6 +49,11 @@ df <- raw_df %>%
     interv_eff = factor(interv_eff),
     age = as.numeric(age),  # age as continuous covariate, not a factor
   )
+
+# Check normality of the dependend variable via a QQ plot
+png(file.path(figures_dir, paste0("qq", "_", metric, ".png")))
+qqPlot(df$y)
+invisible(dev.off())  # write file and close figure
 
 # -------------------------
 # 2. Define nested models
@@ -138,8 +144,8 @@ if (length(valid_models) == 1) {
 
     # Run LRT between consecutive valid models, stepping down to less complext model if not significant
     for (i in seq_len(length(valid_models) - 1)) {
-          name_complex <- model_names[i]
-          name_simpler <- model_names[i + 1]
+        name_complex <- model_names[i]
+        name_simpler <- model_names[i + 1]
 
         cat("\n--- LRT:", name_complex, "(complex) vs", name_simpler, "(simpler) ---\n")
         complex_model = valid_models[[i]]
@@ -180,10 +186,9 @@ if (save) {
   plot(model_to_interpret)
   invisible(dev.off())  # write file and close figure
 
-  # QQ plot — checks normality of residuals
-  png(file.path(figures_dir, paste0("qq", "_", metric, ".png")))
-  qqnorm(residuals(model_to_interpret))
-  qqline(residuals(model_to_interpret))
+  # QQ plot
+  png(file.path(figures_dir, paste0("qq", "_", metric, "_residuals", ".png")))
+  qqPlot(residuals(model_to_interpret))
   invisible(dev.off())  # write file and close figure
 }
 
