@@ -20,6 +20,7 @@ def run_lmm_pipeline(save: bool = False, show: bool = True, verbose: bool = Fals
     )
 
     for metric in metrics:
+        print(f"\n####################################### {metric} #######################################\n")
         # fit_method = lmm.select_best_fit_method(rt_metric_str=metric)
         lmm.test(rt_metric_col=metric, verbose=verbose, save=save)
         plot_lmm_predictions(metric=metric, save=save, show=show)
