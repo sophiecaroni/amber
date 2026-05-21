@@ -52,19 +52,15 @@ def _parse_rscript_output(output: str, pattern: str) -> str:
 def select_best_fit_method() -> str:
     df_path = io.get_tables_path() / 'performance_summary.csv'
     script_out = run_rscript(
-        "eval_lmm_fits.R",
-        [df_path],
-        verbose=True,
+        "eval_lmm_fits.R",[df_path], verbose=True,
     )
     return _parse_rscript_output(script_out.stdout, "PROPOSED_BEST_FIT_METHOD=")
 
 
 def test(rt_metric_col: str, save: bool = False, verbose: bool = False) -> None:
-    df_path = io.get_tables_path() / 'performance_summary.csv'
+    data_path = io.get_tables_path() / 'performance_summary.csv'
     script_out = run_rscript(
-        "lmm_pipeline.R",
-        [rt_metric_col, df_path, verbose, save],
-        verbose=verbose,
+        "lmm_pipeline.R",[rt_metric_col, data_path, verbose, save], verbose=verbose,
     )
     best_model = _parse_rscript_output(script_out.stdout, "SELECTED_MODEL=")
     print(f'BEST MODEL: {best_model}')
