@@ -78,6 +78,10 @@ def get_group_palette():
     return {'adults': '#558fe6', 'children': '#eca1ed'}
 
 
+def get_interv_palette():
+    return {'OA': '#fc589a', 'VR': '#1235e3'}
+
+
 def get_hue_palette(hue: str) -> dict:
     hue = hue.lower()
     if hue == 'cueing':
@@ -86,6 +90,8 @@ def get_hue_palette(hue: str) -> dict:
         return get_att_palette()
     elif hue == 'group':
         return get_group_palette()
+    elif hue == 'interv':
+        return get_interv_palette()
     else:
         raise ValueError(f'Custom palette missing for {hue = }')
 
