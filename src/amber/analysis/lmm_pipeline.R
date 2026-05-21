@@ -220,3 +220,13 @@ anova_result <- tryCatch(
   }
 )
 print(anova_result)
+
+# Check fitted lines over data
+df$fitted <- predict(model_to_interpret)
+
+
+if (save) {
+    # Save the dataframe
+    output_df_path <- file.path(wd, paste0("results_", metric, ".csv"))
+    write.csv(df, output_df_path, row.names=FALSE)
+}
