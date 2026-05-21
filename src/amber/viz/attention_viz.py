@@ -59,7 +59,7 @@ def plot_interv_effects(
 
                 # Customize axis
                 interv_label = vutils.get_interv_label(interv)
-                econd_label = vutils.get_econd_label(econd)
+                econd_label = vutils.get_eye_cond_label(econd)
                 ax.set_title(f"{interv_label} - {econd_label}")
                 ax.set_ylabel(f'{att_rt_agg.title()} Score')
                 ax.set_xlabel('Intervention Effect')
