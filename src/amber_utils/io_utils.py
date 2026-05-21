@@ -29,6 +29,10 @@ def get_figures_path() -> Path:
     return set_for_save(get_outputs_path() / 'figures')
 
 
+def get_stats_path() -> Path:
+    return set_for_save(get_outputs_path() / 'stats')
+
+
 def get_outputs_path(sid: str | None = None) -> Path:
     outputs_path = get_local_root() / 'outputs'
 
