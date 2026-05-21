@@ -8,6 +8,8 @@ from typing import Any
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from amber_utils.viz_utils import plot_context
+from pathlib import Path
+from copy import copy
 
 
 def plot_feature_xcats(
@@ -38,8 +40,14 @@ def plot_feature_xcats(
             sns.boxplot(**plot_kwargs, showfliers=True)
         elif plot_style == 'scatter':
             np.random.seed(42)  # set seed for reproducibility of the stripplot jitter
-            sns.stripplot(**plot_kwargs, jitter=0.2, dodge=True, edgecolor='gray', linewidth=0.5, alpha=0.7)
-            sns.violinplot(**plot_kwargs, cut=0, linewidth=0.5, alpha=0.4, inner='quart', legend=False)
+            # Add different alphas for scatter and violins
+            s_kwargs = copy(plot_kwargs)
+            v_kwargs = copy(plot_kwargs)
+            if 'alpha' not in plot_kwargs.keys():
+                s_kwargs.update(dict(alpha=0.7))
+                v_kwargs.update(dict(alpha=0.4))
+            sns.stripplot(**s_kwargs, jitter=0.2, dodge=True, edgecolor='gray', linewidth=0.5)
+            sns.violinplot(**v_kwargs, cut=0, linewidth=0.5, inner='quart', legend=False)
         else:  # plot_style == 'box-no_outliers':
             sns.boxplot(**plot_kwargs, showfliers=False)
     return fig
@@ -74,23 +82,24 @@ def plot_distribution_supercats(
     return fig
 
 
-def compare_filt(
+def compare_subplots(
         df: pd.DataFrame,
         plot_fun,
+        subplots_col: str = 'filt_cond',
         save: bool = False,
         show: bool = False,
-        save_dir: str | None = None,
+        save_dir: str | Path | None = None,
         **plot_fun_kwargs
 ) -> Figure:
     with plot_context():
-        n_subplots = len(df['filt_cond'].unique())
+        n_subplots = len(df[subplots_col].unique())
         fig, axes = plt.subplots(1, n_subplots, sharey=True, figsize=(3*n_subplots, 3))
         if n_subplots == 1:
             axes = [axes]
 
-        for (filt_cond, sub_df), ax in zip(df.groupby('filt_cond'), axes):
+        for (subplot_cond, sub_df), ax in zip(df.groupby(subplots_col), axes):
             plot_fun(df=sub_df, ax=ax, **plot_fun_kwargs)
-            ax.set_title(str(filt_cond).title())
+            ax.set_title(str(subplot_cond).title())
 
         if save:
             fname = f'plot_filt'
@@ -142,22 +151,22 @@ def _save_subdir(group_col: str | None) -> str:
 
 def plot_trial_differences(df: pd.DataFrame, group_col: str | None = 'group', save_dir: str | None = None, **kwargs):
     save_dir = save_dir or _save_subdir(group_col)
-    compare_filt(df, plot_fun=plot_trials_count, group_col=group_col,
-                 save_dir=save_dir, **kwargs)
+    compare_subplots(df, plot_fun=plot_trials_count, group_col=group_col,
+                     save_dir=save_dir, **kwargs)
 
 
 def plot_feature_overview(df: pd.DataFrame, feature_col: str, group_col: str | None = 'group',
                           save_dir: str | None = None, **kwargs):
     save_dir = save_dir or _save_subdir(group_col)
-    compare_filt(df, plot_fun=plot_feature_xcats, feature_col=feature_col, xcats_col=group_col,
-                 save_dir=save_dir, **kwargs)
+    compare_subplots(df, plot_fun=plot_feature_xcats, feature_col=feature_col, xcats_col=group_col,
+                     save_dir=save_dir, **kwargs)
 
 
 def plot_distribution_overview(df: pd.DataFrame, feature_col: str, group_col: str | None = 'group',
                                 save_dir: str | None = None, **kwargs):
     save_dir = save_dir or _save_subdir(group_col)
-    compare_filt(df, plot_fun=plot_distribution_supercats, feature_col=feature_col, supercats_col=group_col,
-                 save_dir=save_dir, **kwargs)
+    compare_subplots(df, plot_fun=plot_distribution_supercats, feature_col=feature_col, supercats_col=group_col,
+                     save_dir=save_dir, **kwargs)
 
 
 def plot_each_sid_distribution_overview(
@@ -170,8 +179,8 @@ def plot_each_sid_distribution_overview(
     with plot_context():
         for sid, sid_df in df.groupby('sid'):
             group = io.get_group(sid)
-            fig = compare_filt(sid_df, plot_fun=plot_distribution_supercats, feature_col=feature_col,
-                               supercats_col=None, color=vutils.get_group_palette()[group], **kwargs)
+            fig = compare_subplots(sid_df, plot_fun=plot_distribution_supercats, feature_col=feature_col,
+                                   supercats_col=None, color=vutils.get_group_palette()[group], **kwargs)
             fig.suptitle(f'{str(sid)} ({group})')
             if save:
                 vutils.save_figure(save_dir=sid, fname=f'hist_{feature_col}', fig=fig)
