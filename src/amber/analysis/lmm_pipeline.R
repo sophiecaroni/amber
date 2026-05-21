@@ -226,7 +226,15 @@ df$fitted <- predict(model_to_interpret)
 
 
 if (save) {
-    # Save the dataframe
+    # Save the input dataframe with the predicted metric results
     output_df_path <- file.path(wd, paste0("results_", metric, ".csv"))
+    df <- rename(df, !!metric := y)  # put back metric instead of y  # need !! to evaluate metric value and := when using !!
     write.csv(df, output_df_path, row.names=FALSE)
+
+    # Save the ANOVA results
+    anova_df <- as.data.frame(anova_result)
+    anova_df <- rename(anova_df, p_val = `Pr(>Chisq)`)  # rename automatic p value col; need ` because it contains special characters
+    anova_path <- file.path(wd, paste0("anova_", metric, ".csv"))
+    write.csv(anova_df, anova_path, row.names=TRUE)  # use row names to have a column with the effects
+
 }
