@@ -42,7 +42,7 @@ def plot_context():
 
 
 def save_figure(
-        save_dir: str | None,
+        save_dir: str | Path | None,
         fname: str,
         fig: Figure | None = None,
         dpi: int = 900,
