@@ -64,3 +64,11 @@ def test(rt_metric_col: str, save: bool = False, verbose: bool = False) -> None:
     )
     best_model = _parse_rscript_output(script_out.stdout, "SELECTED_MODEL=")
     print(f'BEST MODEL: {best_model}')
+
+
+def post_hocs(rt_metric_col: str, save: bool = False, verbose: bool = False) -> None:
+    anova_path = io.get_stats_path() / f'anova_{rt_metric_col}.csv'
+    model_path = io.get_stats_path() / f'model_{rt_metric_col}.rds'
+    script_out = run_rscript(
+        "lmm_posthoc.R", [rt_metric_col, anova_path, model_path, verbose, save], verbose=verbose,
+    )
