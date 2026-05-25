@@ -11,7 +11,6 @@ def plot_lmm_predictions(metric: str, save: bool = False, show: bool = True):
     df_path = io.get_stats_path() / f'results_{metric}.csv'
     df = pd.read_csv(df_path)
     df['group'] = df['sid'].apply(get_group)
-    df.rename(columns={'y': metric}, inplace=True)
 
     hue = 'interv'
     grouping_cols = ['group', 'eye_cond']

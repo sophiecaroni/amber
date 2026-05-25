@@ -38,9 +38,14 @@ if (save) {
 # -------------------------
 raw_df <- read.csv(file = df_fpath, row.names = 1, colClasses = c(amb_type = "character"))
 
+# If metric ends with _log, load the untransformed column and apply log() in the formula
+log_transform <- endsWith(metric, "_log")
+base_metric <- if (log_transform) sub("_log$", "", metric) else metric
+response_term <- if (log_transform) "log(y)" else "y"
+
 df <- raw_df %>%
-  select(sid, amb_type, eye_cond, interv, interv_eff, age, all_of(metric)) %>%  # select columns of interest for this analysis
-  rename(y = all_of(metric)) %>%  # Rename
+  select(sid, amb_type, eye_cond, interv, interv_eff, age, all_of(base_metric)) %>%  # select columns of interest for this analysis
+  rename(y = all_of(base_metric)) %>%  # Rename
   mutate(
     sid = factor(sid),
     amb_type = factor(amb_type),
@@ -52,7 +57,7 @@ df <- raw_df %>%
 
 # Check normality of the dependend variable via a QQ plot
 png(file.path(figures_dir, paste0("qq", "_", metric, ".png")))
-qqPlot(df$y)
+qqPlot(if (log_transform) log(df$y) else df$y)
 invisible(dev.off())  # write file and close figure
 
 # -------------------------
@@ -64,25 +69,25 @@ random_terms <- "(1 + interv_eff + eye_cond | sid)"
 
 # Full model: all interactions up to 4-way among primary factors + all main effects + age covariate
 full_formula <- as.formula(paste(
-  "y ~ amb_type * eye_cond * interv * interv_eff +",  # * expands to all interactions up to 4-way, equivalent to (sum of all factors)^4
+  response_term, "~ amb_type * eye_cond * interv * interv_eff +",  # * expands to all interactions up to 4-way, equivalent to (sum of all factors)^4
   "age +", random_terms
 ))
 
 # no-4-way: all interactions up to 3-way among primary factors + all main effects + age covariate
 no_4way_formula <- as.formula(paste(
-  "y ~ (amb_type + eye_cond + interv + interv_eff)^3 +",
+  response_term, "~ (amb_type + eye_cond + interv + interv_eff)^3 +",
   "age +", random_terms
 ))
 
 # no-3-way: all interactions up to 2-way among primary factors + all main effects + age covariate
 no_3way_formula <- as.formula(paste(
-  "y ~ (amb_type + eye_cond + interv + interv_eff)^2 +",
+  response_term, "~ (amb_type + eye_cond + interv + interv_eff)^2 +",
   "age +", random_terms
 ))
 
 # Main effects only
 main_formula <- as.formula(paste(
-  "y ~ amb_type + eye_cond + interv + interv_eff + age +",
+  response_term, "~ amb_type + eye_cond + interv + interv_eff + age +",
   random_terms
 ))
 
@@ -221,9 +226,8 @@ anova_result <- tryCatch(
 )
 print(anova_result)
 
-# Check fitted lines over data
-df$fitted <- predict(model_to_interpret)
-
+# Add model prediction lines over data
+df$fitted <- if (log_transform) exp(predict(model_to_interpret)) else predict(model_to_interpret)
 
 if (save) {
     # Save the input dataframe with the predicted metric results
