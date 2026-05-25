@@ -237,4 +237,7 @@ if (save) {
     anova_path <- file.path(wd, paste0("anova_", metric, ".csv"))
     write.csv(anova_df, anova_path, row.names=TRUE)  # use row names to have a column with the effects
 
+    # Save the mixed model
+    saveRDS(model_to_interpret, file.path(wd, paste0("model_", metric, ".rds")))
+
 }
