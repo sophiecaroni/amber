@@ -7,9 +7,6 @@ library(emmeans)
 # Setup working and saving directories
 script_dir <- dirname(normalizePath(sub("--file=", "", grep("--file=", commandArgs(trailingOnly=FALSE), value=TRUE)[1])))
 project_root <- dirname(dirname(dirname(script_dir)))
-wd <- file.path(project_root, "outputs", "stats")
-dir.create(wd, recursive=TRUE, showWarnings=FALSE)
-setwd(wd)
 
 # Extract arguments
 args <- commandArgs(trailingOnly=TRUE)
@@ -66,17 +63,23 @@ if (int_is_sign("amb_type", "eye_cond", "interv", "interv_eff")) {
 if (int_is_sign("amb_type", "eye_cond", "interv", "interv_eff")) {
 
     cat("\n--- emmeans: 1) interv_eff (VR and OA separately) separately for each intervention type (only against BL), eye condition and amblyopia type ---\n")
-    print(contrast(
+    contrasts_trt <- contrast(
         regrid(emm),  # regrid to report in absolute ms; otherwise we get ratios i.e. interpret "RT at BL was 15.3% higher than at FU"
         method="trt.vs.ctrl", ref="BL"  # this to compare a reference ref (control, here baseline "BL") to all other levels, skipping levels between each other
-        )
     )
+    print(contrasts_trt)
 
     cat("\n--- emmeans: 2) both interv and interv_eff focal, all pairs ---\n")
-    print(
-        pairs(  # shortcut for contrast(intervention='pairwise')
-            regrid(emm_full),  # regrid to report in absolute ms; otherwise we get ratios i.e. interpret "RT at BL was 15.3% higher than at FU"
-        )
+    contrasts_pairs <- pairs(  # shortcut for contrast(intervention='pairwise')
+        regrid(emm_full),  # regrid to report in absolute ms; otherwise we get ratios i.e. interpret "RT at BL was 15.3% higher than at FU"
     )
+    print(contrasts_pairs)
 }
 
+if (save) {
+    stats_dir <- file.path(project_root, "outputs", "stats")
+    dir.create(stats_dir, recursive = TRUE, showWarnings = FALSE)
+
+    write.csv(as.data.frame(contrasts_trt),   file.path(stats_dir, paste0("posthocs_interv_bl_ref_", metric, ".csv")),   row.names=FALSE)
+    write.csv(as.data.frame(contrasts_pairs), file.path(stats_dir, paste0("posthocs_intervxeff_pairs_", metric, ".csv")), row.names=FALSE)
+}
