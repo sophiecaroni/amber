@@ -7,7 +7,7 @@ library(tidyr)
 # Extract arguments
 args <- commandArgs(trailingOnly=TRUE)
 rt_metric <- args[1]
-att <- args[2]
+att_metric <- args[2]
 df_fpath <- args[3]
 verbose <- as.logical(args[4])
 save <- as.logical(args[5])
@@ -21,7 +21,7 @@ excluded_amb_type <- 'mixed'
 # Select rows of the df where RT was aggregated as the rt_metric
 att_rt_agg_val <- if (grepl("med", rt_metric)) "median" else "mean"
 df <- raw_df %>%
-    filter(att_rt_agg == att_rt_agg_val, amb_type != excluded_amb_type, att_type == att) %>%
+    filter(att_rt_agg == att_rt_agg_val, amb_type != excluded_amb_type, att_type == att_metric) %>%
     select(-att_rt_agg, -group, -tpoint) %>%  # dont include cols not needed
     mutate(
         sid=factor(sid),
@@ -47,6 +47,6 @@ df <- df %>%
         att_change=att_score - att_score_bl,  # create new column with att_change (attentional change from baseline)
         period=paste0("BL_", interv_eff),  # to have value BL_ST for the change between BL and ST and  BL_FU for the change between BL and FU
     ) %>%
-    select(-att_score_bl, -interv_eff, - att_score) %>%  # remove cols anymore needed
+    select(-att_score_bl, -interv_eff, -att_score) %>%  # remove cols anymore needed
     drop_na(att_change)  # nans appear when the patient did not complete one of the sessions needed for computation
 
