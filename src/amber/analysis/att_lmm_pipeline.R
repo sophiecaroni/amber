@@ -4,6 +4,12 @@ library(tidyr)
 # -------------------------
 # 0. Setup and retrieve args
 # -------------------------
+# Setup working and saving directories
+script_dir <- dirname(normalizePath(sub("--file=", "", grep("--file=", commandArgs(trailingOnly=FALSE), value=TRUE)[1])))
+project_root <- dirname(dirname(dirname(script_dir)))
+wd <- file.path(project_root, "outputs", "stats")
+setwd(wd)
+
 # Extract arguments
 args <- commandArgs(trailingOnly=TRUE)
 rt_metric <- args[1]
@@ -11,6 +17,16 @@ att_metric <- args[2]
 df_fpath <- args[3]
 verbose <- as.logical(args[4])
 save <- as.logical(args[5])
+
+if (save) {
+    dir.create(wd, recursive = TRUE, showWarnings = FALSE)
+    figures_dir <- file.path(project_root, "outputs", "figures", "LMM")
+    dir.create(figures_dir, recursive = TRUE, showWarnings = FALSE)
+    log_con <- file(file.path(wd, paste0("report", "_", att_metric, '.txt')), open = "wt")
+    sink(log_con, split = TRUE)  # print/cat outputs
+    sink(log_con, type = "message")  # warnings
+    on.exit({ sink(type = "message"); sink(); close(log_con) }, add = TRUE)  # use on.exit to run the teardown regardless of how the script exits (error or normal)
+}
 
 # -------------------------
 # 1. Load and prepare data
