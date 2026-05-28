@@ -41,10 +41,11 @@ bl_df <- df %>%
 # Join bl_df in df and use att_score_bl to compute the (absolute) change in attention
 df <- df %>%
     filter(interv_eff %in% c("ST", "FU")) %>%
-    left_join(bl_df, by=c("sid", "amb_type", "eye_cond", "interv", "att_type")) %>%
+    left_join(bl_df, by=c("sid", "amb_type", "eye_cond", "interv", "att_type")) %>%  # create a att_score_bl col with BL values relative to the grouping vars
     mutate(
         att_change=att_score - att_score_bl,  # create new column with att_change (attentional change from baseline)
         period=paste0("BL_", interv_eff),  # to have value BL_ST for the change between BL and ST and  BL_FU for the change between BL and FU
     ) %>%
     select(-att_score_bl, -interv_eff, - att_score) %>%  # remove cols anymore needed
+    drop_na(att_change)  # nans appear when the patient did not complete one of the sessions needed for computation
 
