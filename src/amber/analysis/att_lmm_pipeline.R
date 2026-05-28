@@ -38,15 +38,13 @@ bl_df <- df %>%
     filter(interv_eff == "BL") %>%
     select(sid, amb_type, eye_cond, interv, att_type, att_score_bl=att_score)  # rename att_score col into att_score_bl
 
-# Join bl_df in df and use att_score_bl to compute the percentage of change
-pct_df <- df %>%
+# Join bl_df in df and use att_score_bl to compute the (absolute) change in attention
+df <- df %>%
     filter(interv_eff %in% c("ST", "FU")) %>%
     left_join(bl_df, by=c("sid", "amb_type", "eye_cond", "interv", "att_type")) %>%
     mutate(
-        perc_change=(att_score - att_score_bl) / att_score_bl * 100,  # create new column with perc_change
+        att_change=att_score - att_score_bl,  # create new column with att_change (attentional change from baseline)
         period=paste0("BL_", interv_eff),  # to have value BL_ST for the change between BL and ST and  BL_FU for the change between BL and FU
     ) %>%
-    select(-att_score_bl, -interv_eff) %>%  # remove cols anymore needed
-    drop_na(perc_change)  # nans appear when the patient did not complete one of the neede sessions
+    select(-att_score_bl, -interv_eff, - att_score) %>%  # remove cols anymore needed
 
-print(pct_df)
