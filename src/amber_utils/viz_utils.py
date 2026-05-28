@@ -116,3 +116,11 @@ def get_eye_cond_label(econd: str) -> str:
         'do': 'Dominant eye',
         'nd': 'Non-dominant eye',
     }.get(econd.lower(), econd)
+
+
+def get_att_type_label(att_type: str) -> str:
+    return {
+        'audio_vis': 'Audiovisual',
+        'vis_sel': 'Visual selective',
+        'spat': 'Spatial',
+    }.get(att_type, att_type)
