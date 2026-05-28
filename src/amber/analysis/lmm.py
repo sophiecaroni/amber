@@ -9,6 +9,7 @@
 """
 import subprocess
 import amber_utils.io_utils as io
+import pandas as pd
 from pathlib import Path
 
 
@@ -34,10 +35,9 @@ def run_rscript(rscript_fname: str, args: list, verbose: bool = True) -> subproc
         raise
 
     if verbose:
-        print("\n####################################### R SCRIPT OUTPUT #######################################\n")
         print(result.stdout)
         if result.stderr:
-            print("####################################### R SCRIPT WARNINGS ######################################\n")
+            print("\n\n## R SCRIPT WARNINGS ##")
             print(result.stderr)
     return result
 
@@ -76,6 +76,11 @@ def rt_post_hocs(rt_metric_col: str, save: bool = False, verbose: bool = False) 
 
 def att_lmm(rt_metric_col: str, save: bool = False, verbose: bool = False) -> None:
     data_path = io.get_tables_path() / 'attention_features.csv'
-    script_out = run_rscript(
-        "att_lmm_pipeline.R", [rt_metric_col, data_path, verbose, save], verbose=verbose,
-    )
+
+    # Run a model for each attention type
+    att_types = pd.read_csv(data_path, index_col=0)['att_type'].unique()
+    for att_type in att_types:
+        print(f"{(len(att_type)+8)*'='}\n\t{att_type.upper()}\n{(len(att_type)+8)*'='}")
+        script_out = run_rscript(
+            "att_lmm_pipeline.R", [rt_metric_col, att_type, data_path, verbose, save], verbose=verbose,
+        )

@@ -7,9 +7,10 @@ library(tidyr)
 # Extract arguments
 args <- commandArgs(trailingOnly=TRUE)
 rt_metric <- args[1]
-df_fpath <- args[2]
-verbose <- as.logical(args[3])
-save <- as.logical(args[4])
+att <- args[2]
+df_fpath <- args[3]
+verbose <- as.logical(args[4])
+save <- as.logical(args[5])
 
 # -------------------------
 # 1. Load and prepare data
@@ -20,7 +21,7 @@ excluded_amb_type <- 'mixed'
 # Select rows of the df where RT was aggregated as the rt_metric
 att_rt_agg_val <- if (grepl("med", rt_metric)) "median" else "mean"
 df <- raw_df %>%
-    filter(att_rt_agg == att_rt_agg_val, amb_type != excluded_amb_type) %>%
+    filter(att_rt_agg == att_rt_agg_val, amb_type != excluded_amb_type, att_type == att) %>%
     select(-att_rt_agg, -group, -tpoint) %>%  # dont include cols not needed
     mutate(
         sid=factor(sid),
