@@ -61,17 +61,9 @@ def get_session_tpoint(session_fpath: Path) -> str | None:
     :return: Timepoint string, or None with a warning if not found.
     """
     fpath_str = str(session_fpath)
-    path_parts = np.array([i.lower() for i in fpath_str.split('_')])
-
-    # Discard directories, focus on file name
-    fname_parts = path_parts[1:]
-
-    pattern = re.compile('_?t*[1-5]$')
-    tpoint_lst = list(filter(pattern.match, fname_parts))
-
-    if tpoint_lst:
-        # Take first element of the list (even if more timepoints are found)
-        tpoint = tpoint_lst[0]
+    match = re.search(r'(t[1-5])', fpath_str, re.IGNORECASE)  # requires a 't' and ignores characters after 1-5 digits (e.g. ND in 'T4ND')
+    if match:
+        tpoint = match.group(1)  # fetch content inside regex parentheses
         return tpoint.upper()
 
     # If no timepoint is found in file name, print warning and return None
