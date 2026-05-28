@@ -49,7 +49,7 @@ def plot_interv_effects(
                 # Call plot
                 plot_feature_xcats(
                     interv_df,
-                    feature_col='att_val',
+                    feature_col='att_score',
                     xcats_col='interv_eff',
                     hue='att_type',
                     # split_violin=False,

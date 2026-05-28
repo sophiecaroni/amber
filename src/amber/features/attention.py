@@ -8,7 +8,7 @@ def compute_att_features(df: pd.DataFrame, agg_fn: Callable) -> pd.DataFrame:
     Compute RT-based attention features for a single session using a single aggregation function.
     :param df: Filtered trials DataFrame for a session.
     :param agg_fn: Aggregation function to apply to RT (e.g. np.mean or np.median).
-    :return: DataFrame with columns [att_type, att_rt_agg, att_val].
+    :return: DataFrame with columns [att_type, att_rt_agg, att_score].
     """
     # Compute cueing effects
     cueing_effects = compute_cueing_effects(df, agg_fn)
@@ -22,7 +22,7 @@ def compute_att_features(df: pd.DataFrame, agg_fn: Callable) -> pd.DataFrame:
     return pd.DataFrame({
         'att_type': ['vis_sel', 'audio_vis', 'spat'],
         'att_rt_agg': agg_fn.__name__.replace('np.', ''),
-        'att_val': [vis_sel_att, audio_vis_att, spat_att],
+        'att_score': [vis_sel_att, audio_vis_att, spat_att],
     })
 
 
@@ -55,7 +55,6 @@ def compute_tcc_visual_effect(trials_df: pd.DataFrame, agg_fn: Callable) -> floa
         ]
     rinval_rt = tcc_v_df.loc[tcc_v_df['Cueing'] == 'rinval', 'RT_ms']
     rval_rt = tcc_v_df.loc[tcc_v_df['Cueing'] == 'rval', 'RT_ms']
-
     return agg_fn(rinval_rt) - agg_fn(rval_rt)  # agg_fn operations are applied across rows (trials)
 
 
@@ -73,7 +72,6 @@ def compute_ncc_visual_effect(trials_df: pd.DataFrame, agg_fn: Callable) -> floa
         ]
     rinval_rt = ncc_v_df.loc[ncc_v_df['Cueing'] == 'rinval', 'RT_ms']
     rval_rt = ncc_v_df.loc[ncc_v_df['Cueing'] == 'rval', 'RT_ms']
-
     return agg_fn(rinval_rt) - agg_fn(rval_rt)  # agg_fn operations are applied across rows (trials)
 
 
@@ -91,7 +89,6 @@ def compute_tcc_audiovisual_effect(trials_df: pd.DataFrame, agg_fn: Callable) ->
         ]
     rinval_rt = tcc_av_df.loc[tcc_av_df['Cueing'] == 'rinval', 'RT_ms']
     rval_rt = tcc_av_df.loc[tcc_av_df['Cueing'] == 'rval', 'RT_ms']
-
     return agg_fn(rinval_rt) - agg_fn(rval_rt)  # agg_fn operations are applied across rows (trials)
 
 
@@ -109,7 +106,6 @@ def compute_ncc_audiovisual_effect(trials_df: pd.DataFrame, agg_fn: Callable) ->
         ]
     rinval_rt = ncc_av_df.loc[ncc_av_df['Cueing'] == 'rinval', 'RT_ms']
     rval_rt = ncc_av_df.loc[ncc_av_df['Cueing'] == 'rval', 'RT_ms']
-
     return agg_fn(rinval_rt) - agg_fn(rval_rt)  # agg_fn operations are applied across rows (trials)
 
 
