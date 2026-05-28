@@ -10,7 +10,6 @@ library(dplyr)
 script_dir <- dirname(normalizePath(sub("--file=", "", grep("--file=", commandArgs(trailingOnly=FALSE), value=TRUE)[1])))
 project_root <- dirname(dirname(dirname(script_dir)))
 wd <- file.path(project_root, "outputs", "stats")
-dir.create(wd, recursive = TRUE, showWarnings = FALSE)
 setwd(wd)
 
 # Extract arguments
@@ -20,17 +19,14 @@ df_fpath <- args[2]
 verbose <- as.logical(args[3])
 save <- as.logical(args[4])
 
-figures_dir <- file.path(project_root, "outputs", "figures", "LMM")
-
 if (save) {
-  dir.create(figures_dir, recursive = TRUE, showWarnings = FALSE)
-}
-
-if (save) {
-  log_con <- file(file.path(wd, paste0("report", "_", metric, '.txt')), open = "wt")
-  sink(log_con, split = TRUE)  # print/cat outputs
-  sink(log_con, type = "message")  # warnings
-  on.exit({ sink(type = "message"); sink(); close(log_con) }, add = TRUE)  # use on.exit to run the teardown regardless of how the script exits (error or normal)
+    dir.create(wd, recursive = TRUE, showWarnings = FALSE)
+    figures_dir <- file.path(project_root, "outputs", "figures", "LMM")
+    dir.create(figures_dir, recursive = TRUE, showWarnings = FALSE)
+    log_con <- file(file.path(wd, paste0("report", "_", metric, '.txt')), open = "wt")
+    sink(log_con, split = TRUE)  # print/cat outputs
+    sink(log_con, type = "message")  # warnings
+    on.exit({ sink(type = "message"); sink(); close(log_con) }, add = TRUE)  # use on.exit to run the teardown regardless of how the script exits (error or normal)
 }
 
 # -------------------------
