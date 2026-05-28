@@ -56,9 +56,11 @@ df <- raw_df %>%
   )
 
 # Check normality of the dependend variable via a QQ plot
-png(file.path(figures_dir, paste0("qq", "_", metric, ".png")))
-qqPlot(if (log_transform) log(df$y) else df$y)
-invisible(dev.off())  # write file and close figure
+if (save) {
+    png(file.path(figures_dir, paste0("qq", "_", metric, ".png")))
+    qqPlot(if (log_transform) log(df$y) else df$y)
+    invisible(dev.off())  # write file and close figure
+}
 
 # -------------------------
 # 2. Define nested models
