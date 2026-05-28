@@ -1,5 +1,6 @@
 import pandas as pd
 import amber_utils.parsing_utils as prs
+from typing import Callable
 from pathlib import Path
 from amber_utils import io_utils as io
 
@@ -28,7 +29,7 @@ def add_session_metadata_to_df(df: pd.DataFrame, session_fpath: Path) -> pd.Data
         return df
 
 
-def extract_all_sessions(extract_fn, test: bool):
+def extract_all_sessions(extract_fn: Callable, test: bool):
     """
     Run an extraction function over all raw session files and concatenate results.
     :param extract_fn: Extraction function to apply to each session file (e.g. extract_attention_features).
