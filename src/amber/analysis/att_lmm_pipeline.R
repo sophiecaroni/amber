@@ -61,20 +61,20 @@ df <- df %>%
     filter(interv_eff %in% c("ST", "FU")) %>%
     left_join(bl_df, by=c("sid", "amb_type", "eye_cond", "interv", "att_type")) %>%  # create a att_score_bl col with BL values relative to the grouping vars
     mutate(
-        att_change=att_score - att_score_bl,  # create new column with att_change (attentional change from baseline)
+        bl_change=att_score - att_score_bl,  # create new column bl_change (attentional change from baseline)
         period=factor(paste0("BL_", interv_eff)),  # to have value BL_ST for the change between BL and ST and  BL_FU for the change between BL and FU
     ) %>%
     select(-att_score_bl, -interv_eff, -att_score) %>%  # remove cols anymore needed
-    drop_na(att_change)  # nans appear when the patient did not complete one of the sessions needed for computation
+    drop_na(bl_change)  # nans appear when the patient did not complete one of the sessions needed for computation
 
 # Check normality of the dependent variable via a QQ plot
 if (save) {
     png(file.path(figures_dir, paste0("qq", "_", att_metric, ".png")))
-    qqPlot(df$att_change)
+    qqPlot(df$bl_change)
     invisible(dev.off())  # write file and close figure
 }
 if (save) {
     png(file.path(figures_dir, paste0("hist", "_", att_metric, ".png")))
-    hist(df$att_change)
+    hist(df$bl_change)
     invisible(dev.off())  # write file and close figure
 }
