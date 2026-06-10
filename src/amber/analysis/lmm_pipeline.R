@@ -65,46 +65,43 @@ if (save) {
 # Random effects structure: random intercepts and random slopes for interv_eff and eye_cond, both varying by subject
 random_terms <- "(1 + interv_eff + eye_cond | sid)"
 
-# Full model: all interactions up to 4-way among primary factors + all main effects + age covariate
-full_formula <- as.formula(paste(
-  response_term, "~ amb_type * eye_cond * interv * interv_eff +",  # * expands to all interactions up to 4-way, equivalent to (sum of all factors)^4
-  "age +", random_terms
-))
+formulas <- list(
 
-# no-4-way: all interactions up to 3-way among primary factors + all main effects + age covariate
-no_4way_formula <- as.formula(paste(
-  response_term, "~ (amb_type + eye_cond + interv + interv_eff)^3 +",
-  "age +", random_terms
-))
+    # Full model: all interactions up to 4-way among primary factors + all main effects + age covariate
+    m_full = as.formula(paste(
+        response_term, "~ amb_type * eye_cond * interv * interv_eff +",  # * expands to all interactions up to 4-way, equivalent to (sum of all factors)^4
+        "age +", random_terms)),
 
-# no-3-way: all interactions up to 2-way among primary factors + all main effects + age covariate
-no_3way_formula <- as.formula(paste(
-  response_term, "~ (amb_type + eye_cond + interv + interv_eff)^2 +",
-  "age +", random_terms
-))
+    # Model without 4-way interaction: all interactions up to 3-way among primary factors + all main effects + age covariate
+    m_no_4way = as.formula(paste(
+        response_term, "~ (amb_type + eye_cond + interv + interv_eff)^3 +",
+        "age +", random_terms)),
 
-# Main effects only
-main_formula <- as.formula(paste(
-  response_term, "~ amb_type + eye_cond + interv + interv_eff + age +",
-  random_terms
-))
+    # Model without 3-way interaction: all interactions up to 2-way among primary factors + all main effects + age covariate
+    m_no_3way = as.formula(paste(
+        response_term, "~ (amb_type + eye_cond + interv + interv_eff)^2 +",
+        "age +", random_terms)),
+
+    # Model with main effects only
+    m_main = as.formula(paste(
+        response_term, "~ amb_type + eye_cond + interv + interv_eff + age +",
+        random_terms))
+)
 
 # -------------------------
 # 3. Fit nested models
 # -------------------------
 reml <- FALSE  # for parameters estimation; "ML (REML = FALSE) should be used if you decide to use likelihood ratio tests to test fixed effects"  https://www.zoology.ubc.ca/~schluter/R/Model.html
 
-m_full <- lmer(full_formula, data = df, REML = reml)
-m_no_4way <- lmer(no_4way_formula, data = df, REML = reml)
-m_no_3way <- lmer(no_3way_formula, data = df, REML = reml)
-m_main <- lmer(main_formula, data = df, REML = reml)
+model_names <- names(formulas)
 
-models <- list(m_full = m_full, m_no_4way = m_no_4way, m_no_3way = m_no_3way, m_main = m_main)
-model_names <- names(models)
-if (verbose) {
-    for (i in seq_len(length(models))) {
-        cat('SUMMARY OF', model_names[i], ':')
-        print(summary(models[[i]], correlations=TRUE))
+models <- vector("list", length(formulas))
+names(models) <- model_names
+for (name in model_names) {
+    models[[name]] <- lmer(formulas[[name]], data = df, REML = reml)  # fit each nested model
+    if (verbose) {
+        cat('SUMMARY OF', name, ':\n')
+        print(summary(models[[name]], correlations=TRUE))
     }
 }
 
@@ -115,10 +112,9 @@ if (verbose) {
 converged <- function(model) is.null(model@optinfo$conv$lme4$messages)
 
 cat("\n--- Check of model validity ---\n")
-cat("m_full — converged:", converged(m_full), "| singular:", isSingular(m_full),    "\n")
-cat("m_no_4way — converged:", converged(m_no_4way), "| singular:", isSingular(m_no_4way), "\n")
-cat("m_no_3way — converged:", converged(m_no_3way), "| singular:", isSingular(m_no_3way), "\n")
-cat("m_main — converged:", converged(m_main), "| singular:", isSingular(m_main), "\n")
+for (name in model_names) {
+    cat(name, "— converged:", converged(models[[name]]), "| singular:", isSingular(models[[name]]), "\n")
+}
 
 valid <- function(model) converged(model) && !isSingular(model)  # a model is valid if it converged and its random effects structure is not degenerate
 valid_models <- Filter(valid, models)
@@ -166,13 +162,7 @@ if (length(valid_models) == 1) {
     cat("\nSELECTED_MODEL=", best_model, "\n", sep = "")
 }
 
-model_to_interpret <- switch(
-  best_model,
-  m_full = m_full,
-  m_no_4way = m_no_4way,
-  m_no_3way = m_no_3way,
-  m_main = m_main
-)
+model_to_interpret <- models[[best_model]]
 
 # -------------------------
 # 5. Diagnostics on selected model
@@ -200,13 +190,8 @@ if (save) {
 # -------------------------
 
 # If Type III fails on the selected model (e.g. aliased coefficients due to rank deficiency), fall back to simpler models
-fallback_models <- switch(
-  best_model,
-  m_full = list(m_no_4way, m_no_3way, m_main),
-  m_no_4way = list(m_no_3way, m_main),
-  m_no_3way = list(m_main),
-  m_main = list()
-)
+best_idx <- match(best_model, names(models))
+fallback_models <- if (best_idx < length(models)) models[(best_idx + 1):length(models)] else list()
 
 # Run Type III Wald chi-square tests to identify which predictors/interactions have a significant effect
 cat("\n--- Type III tests: selected model ---\n")
