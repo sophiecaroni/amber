@@ -1,11 +1,11 @@
 """
-    Title: Linear mixed models (LMM)
+    Title: Rregression
 
     Author: Sophie Caroni
     Date of creation: 10.03.2026
 
     Description:
-    This script contains functions that allow to parametrize and run LMMs.
+    This script contains functions that allow to parametrize and run regression analyses.
 """
 import subprocess
 import amber_utils.io_utils as io
@@ -57,24 +57,24 @@ def select_best_fit_method() -> str:
     return _parse_rscript_output(script_out.stdout, "PROPOSED_BEST_FIT_METHOD=")
 
 
-def rt_lmm(rt_metric_col: str, save: bool = False, verbose: bool = False) -> None:
+def model_rt(rt_metric_col: str, save: bool = False, verbose: bool = False) -> None:
     data_path = io.get_tables_path() / 'performance_summary.csv'
     script_out = run_rscript(
-        "lmm_pipeline.R",[rt_metric_col, data_path, verbose, save], verbose=verbose,
+        "model_rt.R",[rt_metric_col, data_path, verbose, save], verbose=verbose,
     )
     best_model = _parse_rscript_output(script_out.stdout, "SELECTED_MODEL=")
     print(f'BEST MODEL: {best_model}')
 
 
-def rt_post_hocs(rt_metric_col: str, save: bool = False, verbose: bool = False) -> None:
+def rt_posthocs(rt_metric_col: str, save: bool = False, verbose: bool = False) -> None:
     anova_path = io.get_stats_path() / f'anova_{rt_metric_col}.csv'
     model_path = io.get_stats_path() / f'model_{rt_metric_col}.rds'
     script_out = run_rscript(
-        "lmm_posthoc.R", [rt_metric_col, anova_path, model_path, verbose, save], verbose=verbose,
+        "rt_posthocs.R", [rt_metric_col, anova_path, model_path, verbose, save], verbose=verbose,
     )
 
 
-def att_lmm(rt_metric_col: str, save: bool = False, verbose: bool = False) -> None:
+def model_att(rt_metric_col: str, save: bool = False, verbose: bool = False) -> None:
     data_path = io.get_tables_path() / 'attention_features.csv'
 
     # Run a model for each attention type
@@ -82,5 +82,5 @@ def att_lmm(rt_metric_col: str, save: bool = False, verbose: bool = False) -> No
     for att_type in att_types:
         print(f"{(len(att_type)+8)*'='}\n\t{att_type.upper()}\n{(len(att_type)+8)*'='}")
         script_out = run_rscript(
-            "att_lmm_pipeline.R", [rt_metric_col, att_type, data_path, verbose, save], verbose=verbose,
+            "model_att.R", [rt_metric_col, att_type, data_path, verbose, save], verbose=verbose,
         )
