@@ -67,17 +67,14 @@ df <- df %>%
     select(-att_score_bl, -interv_eff, -att_score) %>%  # remove cols anymore needed
     drop_na(att_change)  # nans appear when the patient did not complete one of the sessions needed for computation
 
-# Define y
-y <- df$att_change
-
 # Check normality of the dependent variable via a QQ plot
 if (save) {
     png(file.path(figures_dir, paste0("qq", "_", att_metric, ".png")))
-    qqPlot(y)
+    qqPlot(df$att_change)
     invisible(dev.off())  # write file and close figure
 }
 if (save) {
     png(file.path(figures_dir, paste0("hist", "_", att_metric, ".png")))
-    hist(y)
+    hist(df$att_change)
     invisible(dev.off())  # write file and close figure
 }
