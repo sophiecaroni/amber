@@ -85,7 +85,7 @@ if (save) {
 # -------------------------
 
 # Random effects structure: random intercepts and random slopes for period and eye_cond, both varying by subject
-random_terms <- "(1 + period + eye_cond | sid)"
+random_terms <- "(1 | sid)"
 
 formulas <- list(
 
