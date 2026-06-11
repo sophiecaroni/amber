@@ -20,7 +20,7 @@ df_fpath <- args[3]
 verbose <- as.logical(args[4])
 save <- as.logical(args[5])
 
-exp_label <- att_metric
+exp_label <- paste0(att_metric, "_CO")
 if (save) {
     dir.create(wd, recursive = TRUE, showWarnings = FALSE)
     figures_dir <- file.path(project_root, "outputs", "figures", "LMM")
@@ -41,7 +41,6 @@ excluded_amb_type <- 'mixed'
 att_rt_agg_val <- if (grepl("med", rt_metric)) "median" else "mean"
 df <- raw_df %>%
     filter(att_rt_agg == att_rt_agg_val, amb_type != excluded_amb_type, att_type == att_metric) %>%
-    select(-att_rt_agg, -group, -tpoint) %>%  # dont include cols not needed
     mutate(
         sid=factor(sid),
         att_type=factor(att_type),
@@ -51,7 +50,14 @@ df <- raw_df %>%
         interv_eff=factor(interv_eff),
         age=as.numeric(age),
         att_score=as.numeric(att_score),
-    )
+        order=factor(case_when(
+            tpoint %in% c("T1", "T2") ~ "first",
+            tpoint %in% c("T4", "T5") ~ "second",
+            tpoint == "T3" & interv_eff == "FU" ~ "first",
+            tpoint == "T3" & interv_eff == "BL" ~ "second",
+        )),
+    ) %>%
+    select(-att_rt_agg, -group, -tpoint)  # dont include cols not needed
 
 # Subset df to baseline observations
 bl_df <- df %>%
@@ -61,23 +67,21 @@ bl_df <- df %>%
 # Join bl_df in df and use att_score_bl to compute the (absolute) change in attention
 df <- df %>%
     filter(interv_eff %in% c("ST", "FU")) %>%  # drop the baseline rows; baseline is now carried in att_score_bl col
+    mutate(interv_eff = droplevels(interv_eff)) %>%  # need to also drop the BL as level
     left_join(bl_df, by=c("sid", "amb_type", "eye_cond", "interv", "att_type")) %>%
-    mutate(
-        bl_change=att_score - att_score_bl,  # create new column bl_change for the (absolute) change from baseline
-        period=factor(paste0("BL_", interv_eff)),  # to have value BL_ST for the change between BL and ST and  BL_FU for the change between BL and FU
-    ) %>%
-    select(-att_score_bl, -interv_eff, -att_score) %>%  # remove cols now obsolete
-    drop_na(bl_change)  # nans appear when the patient did not complete one of the sessions needed for computation
+    drop_na(att_score, att_score_bl)  # nans appear when the patient did not complete one of the sessions needed for computation
 
 # Check normality of the dependent variable via plots
+y <- "att_score"
+
 if (save) {
-    qqPlot(df$bl_change)
     png(file.path(figures_dir, paste0("qq", "_", exp_label, ".png")))
+    qqPlot(df[[y]])
     invisible(dev.off())  # write file and close figure
 }
 if (save) {
-    hist(df$bl_change)
     png(file.path(figures_dir, paste0("hist", "_", exp_label, ".png")))
+    hist(df[[y]])
     invisible(dev.off())  # write file and close figure
 }
 
@@ -85,32 +89,32 @@ if (save) {
 # 2. Define nested models
 # -------------------------
 
-# Random effects structure: random intercepts and random slopes for period and eye_cond, both varying by subject
+# Random effect terms
 random_terms <- "+ (1 | sid)"
 
 # Covariate terms
-cov_terms <- "+ age"
+cov_terms <- "+ age + att_score_bl + order * interv"
 
 formulas <- list(
 
     # Full model: all interactions up to 4-way among primary factors + all main effects + age covariate
     m_full = as.formula(paste(
-        "bl_change ~ amb_type * eye_cond * interv * period",  # * expands to all interactions up to 4-way, equivalent to (sum of all factors)^4
+        y, "~ amb_type * eye_cond * interv * interv_eff",  # * expands to all interactions up to 4-way, equivalent to (sum of all factors)^4
         cov_terms, random_terms)),
 
     # Model without 4-way interaction: all interactions up to 3-way among primary factors + all main effects + age covariate
     m_no_4way = as.formula(paste(
-        "bl_change ~ (amb_type + eye_cond + interv + period)^3",
+        y, "~ (amb_type + eye_cond + interv + interv_eff)^3",
         cov_terms, random_terms)),
 
     # Model without 3-way interaction: all interactions up to 2-way among primary factors + all main effects + age covariate
     m_no_3way = as.formula(paste(
-        "bl_change ~ (amb_type + eye_cond + interv + period)^2",
+        y, "~ (amb_type + eye_cond + interv + interv_eff)^2",
         cov_terms, random_terms)),
 
     # Model with main effects only
     m_main = as.formula(paste(
-        "bl_change ~ amb_type + eye_cond + interv + period",
+        y, "~ amb_type + eye_cond + interv + interv_eff",
         cov_terms, random_terms))
 )
 
