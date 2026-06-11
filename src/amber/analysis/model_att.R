@@ -52,23 +52,23 @@ df <- raw_df %>%
         att_score=as.numeric(att_score),
     )
 
-# Compute the percentage of change of attention features from BL to ST and from BL to FU
+# Subset df to baseline observations
 bl_df <- df %>%
     filter(interv_eff == "BL") %>%
     select(sid, amb_type, eye_cond, interv, att_type, att_score_bl=att_score)  # rename att_score col into att_score_bl
 
 # Join bl_df in df and use att_score_bl to compute the (absolute) change in attention
 df <- df %>%
-    filter(interv_eff %in% c("ST", "FU")) %>%
-    left_join(bl_df, by=c("sid", "amb_type", "eye_cond", "interv", "att_type")) %>%  # create a att_score_bl col with BL values relative to the grouping vars
+    filter(interv_eff %in% c("ST", "FU")) %>%  # drop the baseline rows; baseline is now carried in att_score_bl col
+    left_join(bl_df, by=c("sid", "amb_type", "eye_cond", "interv", "att_type")) %>%
     mutate(
-        bl_change=att_score - att_score_bl,  # create new column bl_change (attentional change from baseline)
+        bl_change=att_score - att_score_bl,  # create new column bl_change for the (absolute) change from baseline
         period=factor(paste0("BL_", interv_eff)),  # to have value BL_ST for the change between BL and ST and  BL_FU for the change between BL and FU
     ) %>%
-    select(-att_score_bl, -interv_eff, -att_score) %>%  # remove cols anymore needed
+    select(-att_score_bl, -interv_eff, -att_score) %>%  # remove cols now obsolete
     drop_na(bl_change)  # nans appear when the patient did not complete one of the sessions needed for computation
 
-# Check normality of the dependent variable via a QQ plot
+# Check normality of the dependent variable via plots
 if (save) {
     png(file.path(figures_dir, paste0("qq", "_", att_metric, ".png")))
     qqPlot(df$bl_change)
@@ -244,6 +244,7 @@ if (save) {
     anova_path <- file.path(wd, paste0("anova_", att_metric, ".csv"))
     write.csv(anova_df, anova_path, row.names=TRUE)  # use row names to have a column with the effects
 
-    # Save the mixed model
+    # Save the model
     saveRDS(model_to_interpret, file.path(wd, paste0("model_", att_metric, ".rds")))
+    # Save the model
 }
