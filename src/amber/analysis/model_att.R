@@ -85,29 +85,32 @@ if (save) {
 # -------------------------
 
 # Random effects structure: random intercepts and random slopes for period and eye_cond, both varying by subject
-random_terms <- "(1 | sid)"
+random_terms <- "+ (1 | sid)"
+
+# Covariate terms
+cov_terms <- "+ age"
 
 formulas <- list(
 
     # Full model: all interactions up to 4-way among primary factors + all main effects + age covariate
     m_full = as.formula(paste(
-        "bl_change ~ amb_type * eye_cond * interv * period +",  # * expands to all interactions up to 4-way, equivalent to (sum of all factors)^4
-        "age +", random_terms)),
+        "bl_change ~ amb_type * eye_cond * interv * period",  # * expands to all interactions up to 4-way, equivalent to (sum of all factors)^4
+        cov_terms, random_terms)),
 
     # Model without 4-way interaction: all interactions up to 3-way among primary factors + all main effects + age covariate
     m_no_4way = as.formula(paste(
-        "bl_change ~ (amb_type + eye_cond + interv + period)^3 +",
-        "age +", random_terms)),
+        "bl_change ~ (amb_type + eye_cond + interv + period)^3",
+        cov_terms, random_terms)),
 
     # Model without 3-way interaction: all interactions up to 2-way among primary factors + all main effects + age covariate
     m_no_3way = as.formula(paste(
-        "bl_change ~ (amb_type + eye_cond + interv + period)^2 +",
-        "age +", random_terms)),
+        "bl_change ~ (amb_type + eye_cond + interv + period)^2",
+        cov_terms, random_terms)),
 
     # Model with main effects only
     m_main = as.formula(paste(
-        "bl_change ~ amb_type + eye_cond + interv + period + age +",
-        random_terms))
+        "bl_change ~ amb_type + eye_cond + interv + period",
+        cov_terms, random_terms))
 )
 
 # -------------------------
@@ -246,5 +249,4 @@ if (save) {
 
     # Save the model
     saveRDS(model_to_interpret, file.path(wd, paste0("model_", att_metric, ".rds")))
-    # Save the model
 }
