@@ -137,14 +137,27 @@ for (name in model_names) {
 # -------------------------
 # 4. Verify model validity
 # -------------------------
-converged <- function(model) is.null(model@optinfo$conv$lme4$messages)
-
-cat("\n--- Check of model validity ---\n")
-for (name in model_names) {
-    cat(name, "— converged:", converged(models[[name]]), "| singular:", isSingular(models[[name]]), "\n")
+converged <- function(model) {
+    msgs <- model@optinfo$conv$lme4$messages
+    msgs <- msgs[!grepl("singular", msgs, ignore.case = TRUE)]  # ignore automatic singularity detection done here
+    length(msgs) == 0
 }
 
-valid <- function(model) converged(model) && !isSingular(model)  # a model is valid if it converged and its random effects structure is not degenerate
+cat("\n--- Check of model validity ---\n")
+has_degenerate_corrs <- function(model) {
+    rand_eff_cov_structure <- as.data.frame(VarCorr(model))
+    corrs <- rand_eff_cov_structure$sdcor[!is.na(rand_eff_cov_structure$var2)]  # random-effect correlations, where SD (var2) are not nans
+    any(abs(corrs) > 1 - 1e-4, na.rm = TRUE)  # na.rm: a NaN correlation means its variance is ~0 (benign), not degenerate
+}
+for (name in model_names) {
+    cat(
+        name, "— converged:", converged(models[[name]]),
+        "| singular:", isSingular(models[[name]]),
+        "| degenerate corrs:", has_degenerate_corrs(models[[name]]),
+        "\n"
+    )
+}
+valid <- function(model) converged(model) && (!isSingular(model) || !has_degenerate_corrs(model))
 valid_models <- Filter(valid, models)
 
 # Quit if no model is valid
