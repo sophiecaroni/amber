@@ -20,11 +20,12 @@ df_fpath <- args[3]
 verbose <- as.logical(args[4])
 save <- as.logical(args[5])
 
+exp_label <- att_metric
 if (save) {
     dir.create(wd, recursive = TRUE, showWarnings = FALSE)
     figures_dir <- file.path(project_root, "outputs", "figures", "LMM")
     dir.create(figures_dir, recursive = TRUE, showWarnings = FALSE)
-    log_con <- file(file.path(wd, paste0("report", "_", att_metric, '.txt')), open = "wt")
+    log_con <- file(file.path(wd, paste0("report", "_", exp_label, '.txt')), open = "wt")
     sink(log_con, split = TRUE)  # print/cat outputs
     sink(log_con, type = "message")  # warnings
     on.exit({ sink(type = "message"); sink(); close(log_con) }, add = TRUE)  # use on.exit to run the teardown regardless of how the script exits (error or normal)
@@ -70,13 +71,13 @@ df <- df %>%
 
 # Check normality of the dependent variable via plots
 if (save) {
-    png(file.path(figures_dir, paste0("qq", "_", att_metric, ".png")))
     qqPlot(df$bl_change)
+    png(file.path(figures_dir, paste0("qq", "_", exp_label, ".png")))
     invisible(dev.off())  # write file and close figure
 }
 if (save) {
-    png(file.path(figures_dir, paste0("hist", "_", att_metric, ".png")))
     hist(df$bl_change)
+    png(file.path(figures_dir, paste0("hist", "_", exp_label, ".png")))
     invisible(dev.off())  # write file and close figure
 }
 
@@ -199,12 +200,12 @@ print(VarCorr(model_to_interpret))  # if (all) intercept-slope correlations are 
 # Check residuals normality
 if (save) {
   # Fitted vs residuals — checks homoscedasticity
-  png(file.path(figures_dir, paste0("fitted_vs_residuals", "_", att_metric, ".png")))
+  png(file.path(figures_dir, paste0("fitted_vs_residuals", "_", exp_label, ".png")))
   plot(model_to_interpret)
   invisible(dev.off())  # write file and close figure
 
   # QQ plot
-  png(file.path(figures_dir, paste0("qq", "_", att_metric, "_residuals", ".png")))
+  png(file.path(figures_dir, paste0("qq", "_", exp_label, "_residuals", ".png")))
   qqPlot(residuals(model_to_interpret))
   invisible(dev.off())  # write file and close figure
 }
@@ -238,13 +239,13 @@ df$fitted <- predict(model_to_interpret)
 
 if (save) {
     # Save the input dataframe with the predicted att_metric results
-    output_df_path <- file.path(wd, paste0("results_", att_metric, ".csv"))
+    output_df_path <- file.path(wd, paste0("results_", exp_label, ".csv"))
     write.csv(df, output_df_path, row.names=FALSE)
 
     # Save the ANOVA results
     anova_df <- as.data.frame(anova_result)
     anova_df <- rename(anova_df, p_val = `Pr(>Chisq)`)  # rename automatic p value col; need ` because it contains special characters
-    anova_path <- file.path(wd, paste0("anova_", att_metric, ".csv"))
+    anova_path <- file.path(wd, paste0("anova_", exp_label, ".csv"))
     write.csv(anova_df, anova_path, row.names=TRUE)  # use row names to have a column with the effects
 
     # Save the model
