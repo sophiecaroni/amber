@@ -266,5 +266,5 @@ if (save) {
     write.csv(anova_df, anova_path, row.names=TRUE)  # use row names to have a column with the effects
 
     # Save the model
-    saveRDS(model_to_interpret, file.path(wd, paste0("model_", att_metric, ".rds")))
+    saveRDS(model_to_interpret, file.path(wd, paste0("model_", exp_label, ".rds")))
 }
