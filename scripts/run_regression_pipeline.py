@@ -19,8 +19,9 @@ def run_rt_regression(rt_metric: str, save: bool = False, show: bool = True, ver
 
 
 def run_att_regression(rt_metric: str, save: bool = False, show: bool = True, verbose: bool = False) -> None:
-    regression.model_att(rt_metric, verbose=verbose, save=save)
-    regression.att_posthocs(rt_metric, verbose=verbose, save=save)
+    label = '_mixedout'  # need _ in front!
+    regression.model_att(rt_metric, verbose=verbose, save=save, label=label)
+    regression.att_posthocs(rt_metric, verbose=verbose, save=save, label=label)
 
 
 def main(**kwargs):

@@ -20,7 +20,7 @@ df_fpath <- args[3]
 verbose <- as.logical(args[4])
 save <- as.logical(args[5])
 
-exp_label <- paste0(att_metric, "_CO")
+exp_label <- paste0(att_metric, args[6])
 if (save) {
     dir.create(wd, recursive = TRUE, showWarnings = FALSE)
     figures_dir <- file.path(project_root, "outputs", "figures", "LMM")

@@ -16,7 +16,7 @@ model_fpath <- args[3]
 verbose <- as.logical(args[4])
 save <- as.logical(args[5])
 
-exp_label <- paste0(att_metric, "_wm")
+exp_label <- paste0(att_metric, args[6])
 
 if (save) {
     stats_dir <- file.path(project_root, "outputs", "stats")
