@@ -84,3 +84,18 @@ def model_att(rt_metric_col: str, save: bool = False, verbose: bool = False) -> 
         script_out = run_rscript(
             "model_att.R", [rt_metric_col, att_type, data_path, verbose, save], verbose=verbose,
         )
+
+
+def att_posthocs(rt_metric_col: str, save: bool = False, verbose: bool = False) -> None:
+    data_path = io.get_tables_path() / 'attention_features.csv'
+    att_types = pd.read_csv(data_path, index_col=0)['att_type'].unique()
+
+    # Run post-hocs for each attention type separately
+    for att_type in att_types:
+
+        anova_path = io.get_stats_path() / f'anova_{att_type}.csv'
+        model_path = io.get_stats_path() / f'model_{att_type}.rds'
+        print(f"{(len(att_type)+8)*'='}\n\t{att_type.upper()}\n{(len(att_type)+8)*'='}")
+        script_out = run_rscript(
+            "att_posthocs.R", [att_type, anova_path, model_path, verbose, save], verbose=verbose,
+        )
