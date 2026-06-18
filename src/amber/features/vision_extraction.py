@@ -61,8 +61,3 @@ def extract_vision_features() -> pd.DataFrame:
         all_sheets[name] = _format_vision_df(name, sheet)
 
     return pd.concat(all_sheets.values()).sort_values(by=['sid', 'interv', 'interv_eff', 'vis_type', 'vis_test'])
-
-
-if __name__ == '__main__':
-    table = extract_vision_features()
-    print(table)
