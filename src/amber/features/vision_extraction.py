@@ -46,7 +46,7 @@ def _format_vision_df(df_label: str, df: pd.DataFrame) -> pd.DataFrame:
     df = pd.concat([df.drop(columns='cond'), split], axis=1)
 
     # Format interv_eff values
-    df.replace({'interv_eff': {'Screen': 'BL', 'Post': 'Post', 'F-up': 'FU'}}, inplace=True)
+    df.replace({'interv_eff': {'Screen': 'BL', 'Post': 'ST', 'F-up': 'FU'}}, inplace=True)
 
     if df_label.startswith('BCVA'):
         df = _format_acq_df(df_label, df)
