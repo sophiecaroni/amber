@@ -33,7 +33,7 @@ def _format_vision_df(df_label: str, df: pd.DataFrame) -> pd.DataFrame:
     # Format existing columns and handle nans
     old_sid_col = 'Old AMB code'
     df.dropna(subset=[old_sid_col], how='all', inplace=True)
-    df['sid'] = df[old_sid_col].apply(lambda val: re.search('AMB\d\d', val))
+    df['sid'] = df[old_sid_col].apply(lambda val: re.search(r'AMB\d\d', val))
     df.dropna(subset='sid', inplace=True)  # Drop rows where sid is nan or None (no match found)
     df['sid'] = df['sid'].apply(lambda val: val.group(0))  # ungroup valid matches
     df.drop(columns=[old_sid_col, 'New code'], inplace=True)  # useless cols
