@@ -40,6 +40,7 @@ def _format_vision_df(df_label: str, df: pd.DataFrame) -> pd.DataFrame:
 
     # Transform to long format
     df = df.melt(id_vars=['sid'], var_name='cond', value_name='vis_score')
+    df.dropna(subset=['vis_score'], axis=0, inplace=True)  # drop rows missing a vis_score value (it means the participant was not measured there
 
     # Split "cond" values into interv_eff and interv
     split = df['cond'].str.extract(r'^(?P<interv_eff>.+)[-_](?P<interv>VR|OA)$')
