@@ -59,17 +59,24 @@ df <- raw_df %>%
     ) %>%
     select(-att_rt_agg, -group, -tpoint)  # dont include cols not needed
 
-# Subset df to baseline observations
+# -------------------------------------------------------
+# 2. Format baseline-attention score as separate column
+# -------------------------------------------------------
+# Subset df to baseline observations, and rename att_score column into att_score_bl
 bl_df <- df %>%
     filter(interv_eff == "BL") %>%
     select(sid, amb_type, eye_cond, interv, att_type, att_score_bl=att_score)  # rename att_score col into att_score_bl
 
-# Join bl_df in df and use att_score_bl to compute the (absolute) change in attention
+# Join bl_df in df to have baseline values as a new column (and not a level of interv_eff column) to use as covariate
 df <- df %>%
     filter(interv_eff %in% c("ST", "FU")) %>%  # drop the baseline rows; baseline is now carried in att_score_bl col
     mutate(interv_eff = droplevels(interv_eff)) %>%  # need to also drop the BL as level
     left_join(bl_df, by=c("sid", "amb_type", "eye_cond", "interv", "att_type")) %>%
-    drop_na(att_score, att_score_bl)  # nans appear when the patient did not complete one of the sessions needed for computation
+    drop_na(att_score, att_score_bl)  # nans appear when the patient did not complete one of either BL or ST/FU sessions
+
+# ---------------------
+# 3. Normality check
+# ---------------------
 
 # Check normality of the dependent variable via plots
 y <- "att_score"
@@ -86,7 +93,7 @@ if (save) {
 }
 
 # -------------------------
-# 2. Define nested models
+# 4. Define nested models
 # -------------------------
 
 # Random effect terms
@@ -119,7 +126,7 @@ formulas <- list(
 )
 
 # -------------------------
-# 3. Fit nested models
+# 5. Fit nested models
 # -------------------------
 reml <- FALSE  # for parameters estimation; "ML (REML = FALSE) should be used if you decide to use likelihood ratio tests to test fixed effects"  https://www.zoology.ubc.ca/~schluter/R/Model.html
 model_names <- names(formulas)
@@ -135,7 +142,7 @@ for (name in model_names) {
 
 
 # -------------------------
-# 4. Verify model validity
+# 6. Verify model validity
 # -------------------------
 converged <- function(model) {
     msgs <- model@optinfo$conv$lme4$messages
@@ -168,7 +175,7 @@ if (length(valid_models) == 0) {
 
 
 # -------------------------
-# 5. Select best model
+# 7. Select best model
 # -------------------------
 
 # Initialise best_model to most complex model (first in valid_models)
@@ -207,7 +214,7 @@ model_to_interpret <- models[[best_model]]
 
 
 # -------------------------
-# 5. Diagnostics on selected model
+# 8. Diagnostics on selected model
 # -------------------------
 
 # Check correct structure of random effects
@@ -228,7 +235,7 @@ if (save) {
 }
 
 # -------------------------
-# 6. Inference on the selected model
+# 9. Inference on the selected model
 # -------------------------
 
 # If Type III fails on the selected model (e.g. aliased coefficients due to rank deficiency), fall back to simpler models
