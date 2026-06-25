@@ -41,7 +41,6 @@ df <- raw_df %>%
     filter(att_rt_agg == att_rt_agg_val, att_type == att_metric) %>%
     mutate(
         sid=factor(sid),
-        att_type=factor(att_type),
         amb_type=factor(amb_type),
         eye_cond=factor(eye_cond),
         interv=factor(interv),
@@ -55,7 +54,7 @@ df <- raw_df %>%
             tpoint == "T3" & interv_eff == "BL" ~ "second",
         )),
     ) %>%
-    select(-att_rt_agg, -group, -tpoint)  # dont include cols not needed
+    select(-att_rt_agg, -group, -tpoint, -att_type)  # dont include cols not needed
 
 # -------------------------------------------------------
 # 2. Format baseline-attention score as separate column
@@ -63,13 +62,13 @@ df <- raw_df %>%
 # Subset df to baseline observations, and rename att_score column into att_score_bl
 att_bl_df <- df %>%
     filter(interv_eff == "BL") %>%
-    select(sid, amb_type, eye_cond, interv, att_type, att_score_bl=att_score)  # rename att_score col into att_score_bl
+    select(sid, amb_type, eye_cond, interv, att_score_bl=att_score)  # rename att_score col into att_score_bl
 
 # Join att_bl_df in df to have baseline values as a new column (and not a level of interv_eff column) to use as covariate
 df <- df %>%
     filter(interv_eff %in% c("ST", "FU")) %>%  # drop the baseline rows; baseline is now carried in att_score_bl col
     mutate(interv_eff = droplevels(interv_eff)) %>%  # need to also drop the BL as level
-    left_join(att_bl_df, by=c("sid", "amb_type", "eye_cond", "interv", "att_type")) %>%
+    left_join(att_bl_df, by=c("sid", "amb_type", "eye_cond", "interv")) %>%
     drop_na(att_score, att_score_bl)  # nans appear when the patient did not complete one of either BL or ST/FU sessions
 
 # ----------------------------------
