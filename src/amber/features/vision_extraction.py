@@ -62,10 +62,8 @@ def _format_vision_df(df_label: str, df: pd.DataFrame) -> pd.DataFrame:
     else:
         df = _format_stereo_df(df_label, df)
 
-    # Add metdata
     df = add_session_metadata_to_df(df)
-
-    return df
+    return df.reset_index(drop=True)
 
 
 def extract_vision_features() -> pd.DataFrame:
@@ -73,4 +71,5 @@ def extract_vision_features() -> pd.DataFrame:
     for name, sheet in all_sheets.items():
         all_sheets[name] = _format_vision_df(name, sheet)
 
-    return pd.concat(all_sheets.values()).sort_values(by=['sid', 'interv', 'interv_eff', 'vis_type', 'vis_test'])
+    final_df = pd.concat(all_sheets.values()).sort_values(by=['sid', 'interv', 'interv_eff', 'vis_type', 'vis_test'])
+    return final_df.reset_index(drop=True)
