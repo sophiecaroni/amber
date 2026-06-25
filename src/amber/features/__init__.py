@@ -5,7 +5,7 @@ from pathlib import Path
 from amber_utils import io_utils as io
 
 
-def add_session_metadata_to_df(df: pd.DataFrame, session_fpath: Path) -> pd.DataFrame:
+def _add_metadata_from_session_file(df: pd.DataFrame, session_fpath: Path) -> pd.DataFrame:
     df = df.copy()
     sid = prs.get_session_sid(session_fpath)
     df.insert(0, 'sid', sid)
@@ -27,6 +27,26 @@ def add_session_metadata_to_df(df: pd.DataFrame, session_fpath: Path) -> pd.Data
         df.insert(6, 'interv', io.get_sid_interv(sid, tpoint))
         df.insert(7, 'interv_eff', prs.get_tpoint_interv_eff(tpoint))
         return df
+
+
+def _add_metadata_from_vis_df(vis_df: pd.DataFrame) -> pd.DataFrame:
+    if 'sid' not in vis_df.columns:
+        raise ValueError("Need 'sid' column to extract metadata.")
+    sid_dfs_w_meta = []
+    for sid, sid_df in vis_df.groupby('sid'):
+        sid_df.insert(1, 'amb_type', io.get_amb_type(sid))
+        sid_df.insert(2, 'age', io.get_age(sid))
+        sid_df.insert(3, 'group', io.get_group(sid))
+        sid_dfs_w_meta.append(sid_df)
+    vis_df_w_meta = pd.concat(sid_dfs_w_meta, ignore_index=True)
+    return vis_df_w_meta
+
+
+def add_session_metadata_to_df(df: pd.DataFrame, session_fpath: Path | None = None) -> pd.DataFrame:
+    if session_fpath is not None:
+        return _add_metadata_from_session_file(df, session_fpath)
+    else:
+        return _add_metadata_from_vis_df(df)
 
 
 def extract_all_sessions(extract_fn: Callable, test: bool):

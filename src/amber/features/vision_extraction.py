@@ -1,5 +1,6 @@
 import pandas as pd
 import re
+from amber.features import add_session_metadata_to_df
 
 
 def _format_acq_df(df_label: str, df: pd.DataFrame) -> pd.DataFrame:
@@ -53,6 +54,10 @@ def _format_vision_df(df_label: str, df: pd.DataFrame) -> pd.DataFrame:
         df = _format_acq_df(df_label, df)
     else:
         df = _format_stereo_df(df_label, df)
+
+    # Add metdata
+    df = add_session_metadata_to_df(df)
+
     return df
 
 
