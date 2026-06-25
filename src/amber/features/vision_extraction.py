@@ -23,8 +23,14 @@ def _format_stereo_df(df_label: str, df: pd.DataFrame) -> pd.DataFrame:
         raise ValueError('Unexpected format of acq sheet name!')
     df['vis_type'] = 'ste'
     df['vis_test'] = parts[1].lower()[:3]  # only encode via three first letters
-    df['eye_cond'] = 'both'  # stereovision tests are conducted on both eyes
-    return df
+
+    # Stereovision tests are conducted on both eyes, so duplicate current df for each eye condition
+    df_do = df.copy()
+    df_do['eye_cond'] = 'DO'
+    df_nd = df.copy()
+    df_nd['eye_cond'] = 'ND'
+    final_df = pd.concat([df_do, df_nd], ignore_index=True)
+    return final_df
 
 
 def _format_vision_df(df_label: str, df: pd.DataFrame) -> pd.DataFrame:
