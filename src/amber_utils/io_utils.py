@@ -45,7 +45,7 @@ def get_outputs_path(sid: str | None = None) -> Path:
 
 
 def load_rec_metadata_df(fpath: str | Path | None = None) -> pd.DataFrame:
-    fpath = fpath or f'{get_data_path()}/extra'
+    fpath = fpath or get_data_path() / 'extra'
     df = pd.read_excel(f'{fpath}/AMBER_rec_metadata.xlsx', index_col=0)
 
     # Clean up subject IDs index column
