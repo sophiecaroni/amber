@@ -24,9 +24,14 @@ def run_att_regression(rt_metric: str, save: bool = False, show: bool = True, ve
     regression.att_posthocs(rt_metric, verbose=verbose, save=save, label=label)
 
 
+def run_att_vis_regression(rt_metric: str, save: bool = False, show: bool = True, verbose: bool = False) -> None:
+    regression.model_att_vis(rt_metric, verbose=verbose, save=save)
+
+
 def main(**kwargs):
-    run_rt_regression(**kwargs)
-    run_att_regression(**kwargs)
+    # run_rt_regression(**kwargs)
+    # run_att_regression(**kwargs)
+    run_att_vis_regression(**kwargs)
 
 
 if __name__ == "__main__":
