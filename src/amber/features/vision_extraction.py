@@ -1,6 +1,7 @@
 import pandas as pd
 import re
 from amber.features import add_session_metadata_to_df
+from amber_utils.io_utils import get_data_path
 
 
 def _format_acq_df(df_label: str, df: pd.DataFrame) -> pd.DataFrame:
@@ -68,7 +69,7 @@ def _format_vision_df(df_label: str, df: pd.DataFrame) -> pd.DataFrame:
 
 
 def extract_vision_features() -> pd.DataFrame:
-    all_sheets = pd.read_excel("/Users/sophiecaroni/amber/data/extra/20260616_AMBER_BCVA&STEREOdata.xlsx", sheet_name=None)
+    all_sheets = pd.read_excel(get_data_path()/ "extra" / "20260616_AMBER_BCVA&STEREOdata.xlsx", sheet_name=None)
     for name, sheet in all_sheets.items():
         all_sheets[name] = _format_vision_df(name, sheet)
 
