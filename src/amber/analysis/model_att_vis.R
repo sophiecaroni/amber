@@ -1,5 +1,6 @@
 library(dplyr)
 library(tidyr)
+library(car)
 
 # -------------------------
 # 0. Setup and retrieve args
@@ -91,3 +92,21 @@ df <- df %>%
     mutate(interv_eff = droplevels(factor(interv_eff))) %>%  # need to also drop the BL as level  # need factor() because initial mutation is "lost" after join
     left_join(bl_vis_df, by=c("sid", "amb_type", "eye_cond", "interv", "vis_type", "vis_test")) %>%
     drop_na(vis_score, vis_score_bl)  # nans appear when the patient did not complete one of the sessions needed for computation
+
+# ---------------------
+# 4. Normality check
+# ---------------------
+
+# Check normality of the dependent variable via plots
+y <- "att_score"
+
+if (save) {
+    png(file.path(figures_dir, paste0("qq", "_", exp_label, ".png")))
+    qqPlot(df[[y]])
+    invisible(dev.off())  # write file and close figure
+}
+if (save) {
+    png(file.path(figures_dir, paste0("hist", "_", exp_label, ".png")))
+    hist(df[[y]])
+    invisible(dev.off())  # write file and close figure
+}
