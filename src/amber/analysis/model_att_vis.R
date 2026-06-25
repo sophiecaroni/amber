@@ -75,23 +75,32 @@ df <- df %>%
 # ----------------------------------
 # 3. Add baseline vision features
 # -----------------------------------
-# First join to add the vision-features df into the current df (only carrying attention features atm)
+# Read in vision-features df and pivot it to create one vision-score column per vis_type x vis_test combination
 vis_df <- read.csv(file=vis_df_fpath, row.names=1, colClasses=c(amb_type="character"))
-common_cols <- intersect(colnames(df), colnames(vis_df))
-df <- df %>%
-    left_join(vis_df, by=common_cols)
+vis_wide <- vis_df %>%
+    pivot_wider(
+        names_from = c(vis_type, vis_test),
+        names_glue = "vis_{vis_type}_{vis_test}",
+        values_from = vis_score
+    )
 
-# Subset df to interv_eff baseline observations, and rename vis_score column into vis_score_bl
-bl_vis_df <- vis_df %>%
+# Join to add vision-features df into the current df (only carrying attention features atm)
+common_cols <- intersect(colnames(df), colnames(vis_wide))
+df <- df %>%
+    left_join(vis_wide, by=common_cols)
+
+# Subset vis to interv_eff baseline observations, and tag each vis column with a _bl suffix
+bl_vis_df <- vis_wide %>%
     filter(interv_eff == "BL") %>%
-    select(sid, amb_type, eye_cond, interv, vis_type, vis_test, vis_score_bl=vis_score)  # rename vis_score col into vis_score_bl
+    select(sid, amb_type, eye_cond, interv, starts_with("vis_")) %>%
+    rename_with(~ sub("^vis_", "vis_bl_", .x), starts_with("vis_"))
 
-# Join bl_vis_df in df to have baseline values as a new column (and not as level of interv_eff column) - to use as covariate
+# Join bl_vis_df in df to have baseline values as new columns (and not as level of interv_eff column) - to use as covariates
 df <- df %>%
-    filter(interv_eff %in% c("ST", "FU")) %>%  # drop the baseline rows; baseline is now carried in att_score_bl col
+    filter(interv_eff %in% c("ST", "FU")) %>%  # drop the baseline rows; baseline is now carried in vis_bl_* cols
     mutate(interv_eff = droplevels(factor(interv_eff))) %>%  # need to also drop the BL as level  # need factor() because initial mutation is "lost" after join
-    left_join(bl_vis_df, by=c("sid", "amb_type", "eye_cond", "interv", "vis_type", "vis_test")) %>%
-    drop_na(vis_score, vis_score_bl)  # nans appear when the patient did not complete one of the sessions needed for computation
+    left_join(bl_vis_df, by=c("sid", "amb_type", "eye_cond", "interv")) %>%  # nans appear in vis_* cols when the patient did not complete a given test
+    drop_na()  # nans appear in vis-bl columns when the patient did not complete the tests
 
 # ---------------------
 # 4. Normality check
