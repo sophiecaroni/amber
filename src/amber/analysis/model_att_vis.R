@@ -61,13 +61,34 @@ df <- raw_df %>%
 # 2. Format baseline-attention score as separate column
 # -------------------------------------------------------
 # Subset df to baseline observations, and rename att_score column into att_score_bl
-bl_df <- df %>%
+att_bl_df <- df %>%
     filter(interv_eff == "BL") %>%
     select(sid, amb_type, eye_cond, interv, att_type, att_score_bl=att_score)  # rename att_score col into att_score_bl
 
-# Join bl_df in df to have baseline values as a new column (and not a level of interv_eff column) to use as covariate
+# Join att_bl_df in df to have baseline values as a new column (and not a level of interv_eff column) to use as covariate
 df <- df %>%
     filter(interv_eff %in% c("ST", "FU")) %>%  # drop the baseline rows; baseline is now carried in att_score_bl col
     mutate(interv_eff = droplevels(interv_eff)) %>%  # need to also drop the BL as level
-    left_join(bl_df, by=c("sid", "amb_type", "eye_cond", "interv", "att_type")) %>%
+    left_join(att_bl_df, by=c("sid", "amb_type", "eye_cond", "interv", "att_type")) %>%
     drop_na(att_score, att_score_bl)  # nans appear when the patient did not complete one of either BL or ST/FU sessions
+
+# ----------------------------------
+# 3. Add baseline vision features
+# -----------------------------------
+# First join to add the vision-features df into the current df (only carrying attention features atm)
+vis_df <- read.csv(file=vis_df_fpath, row.names=1, colClasses=c(amb_type="character"))
+common_cols <- intersect(colnames(df), colnames(vis_df))
+df <- df %>%
+    left_join(vis_df, by=common_cols)
+
+# Subset df to interv_eff baseline observations, and rename vis_score column into vis_score_bl
+bl_vis_df <- vis_df %>%
+    filter(interv_eff == "BL") %>%
+    select(sid, amb_type, eye_cond, interv, vis_type, vis_test, vis_score_bl=vis_score)  # rename vis_score col into vis_score_bl
+
+# Join bl_vis_df in df to have baseline values as a new column (and not as level of interv_eff column) - to use as covariate
+df <- df %>%
+    filter(interv_eff %in% c("ST", "FU")) %>%  # drop the baseline rows; baseline is now carried in att_score_bl col
+    mutate(interv_eff = droplevels(factor(interv_eff))) %>%  # need to also drop the BL as level  # need factor() because initial mutation is "lost" after join
+    left_join(bl_vis_df, by=c("sid", "amb_type", "eye_cond", "interv", "vis_type", "vis_test")) %>%
+    drop_na(vis_score, vis_score_bl)  # nans appear when the patient did not complete one of the sessions needed for computation
